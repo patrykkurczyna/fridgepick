@@ -4,6 +4,8 @@ import type { Database } from './db/database.types';
 type Tables = Database['public']['Tables'];
 type Enums = Database['public']['Enums'];
 
+// DatabaseEnums is exported at the bottom of the file
+
 // =============================================================================
 // AUTHENTICATION TYPES
 // =============================================================================

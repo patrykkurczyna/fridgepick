@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { FridgeView } from '@/components/fridge/FridgeView';
+
+const title = "Moja Lodówka - FridgePick";
+---
+
+<Layout title={title}>
+    <FridgeView client:load />
+</Layout>
+
