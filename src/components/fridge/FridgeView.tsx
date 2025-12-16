@@ -15,7 +15,7 @@ import type { QuickAddItem } from '@/types/fridge';
  */
 export const FridgeView: React.FC = () => {
   const { categories } = useProductCategories();
-  
+
   const {
     products,
     loading,
@@ -58,14 +58,20 @@ export const FridgeView: React.FC = () => {
     }
 
     try {
+      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
+
       const response = await fetch(`/api/user-products/${productId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
         // Refresh products list
         refresh();
-        
+
         // Show success message (could be replaced with toast notification)
         alert('Produkt został usunięty pomyślnie');
       } else {
@@ -82,9 +88,13 @@ export const FridgeView: React.FC = () => {
    */
   const handleQuickAdd = async (item: QuickAddItem): Promise<void> => {
     try {
+      // Get JWT token from environment variable (same as useRealFridgeProducts)
+      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
+
       const response = await fetch('/api/user-products', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${jwtToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -99,7 +109,7 @@ export const FridgeView: React.FC = () => {
       if (response.ok) {
         // Refresh products list
         refresh();
-        
+
         // Show success message
         alert(`Dodano ${item.name} do lodówki`);
       } else {

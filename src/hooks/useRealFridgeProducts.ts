@@ -9,6 +9,7 @@ export const useRealFridgeProducts = () => {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Get token from environment variable
   const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
@@ -54,7 +55,7 @@ export const useRealFridgeProducts = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [refreshTrigger]);
 
   // Handlers for UI interactions
   const handleSearch = (query: string) => {
@@ -72,7 +73,8 @@ export const useRealFridgeProducts = () => {
   const retry = () => {
     setLoading(true);
     setError(null);
-    // Re-trigger fetch by dependency change
+    // Re-trigger fetch by incrementing refreshTrigger
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const refresh = () => {
