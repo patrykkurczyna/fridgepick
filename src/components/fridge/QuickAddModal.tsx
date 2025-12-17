@@ -101,7 +101,8 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
         name: formData.name.trim(),
         categoryId: formData.categoryId,
         defaultQuantity: formData.quantity,
-        defaultUnit: formData.unit
+        defaultUnit: formData.unit,
+        expiresAt: formData.expiresAt || null
       });
     } catch (error) {
       setError('Nie udało się dodać produktu. Spróbuj ponownie.');
@@ -117,9 +118,24 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
     return date.toISOString().split('T')[0];
   };
 
+  // Get appropriate step and placeholder based on unit
+  const getQuantitySettings = () => {
+    switch (formData.unit) {
+      case 'g':
+        return { step: '1', placeholder: '500' };
+      case 'l':
+        return { step: '0.1', placeholder: '1.5' };
+      case 'szt':
+        return { step: '1', placeholder: '2' };
+      default:
+        return { step: '0.1', placeholder: '1' };
+    }
+  };
+
   if (!isOpen) return null;
 
   const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
+  const quantitySettings = getQuantitySettings();
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -207,8 +223,9 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   type="number"
                   value={formData.quantity}
                   onChange={(e) => handleInputChange('quantity', parseFloat(e.target.value) || 0)}
-                  min="0.1"
-                  step="0.1"
+                  min="0"
+                  step={quantitySettings.step}
+                  placeholder={quantitySettings.placeholder}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={loading}
                 />

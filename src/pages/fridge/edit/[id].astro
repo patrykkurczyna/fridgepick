@@ -1,0 +1,11 @@
+---
+// Edit existing product page
+import Layout from '@/layouts/Layout.astro';
+import { ProductFormView } from '@/components/product-form/ProductFormView';
+
+const { id } = Astro.params;
+---
+
+<Layout title="Edytuj produkt - FridgePick">
+  <ProductFormView mode="edit" productId={id} client:load />
+</Layout>

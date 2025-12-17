@@ -86,10 +86,13 @@ export const FridgeView: React.FC = () => {
   /**
    * Handle quick add item selection
    */
-  const handleQuickAdd = async (item: QuickAddItem): Promise<void> => {
+  const handleQuickAdd = async (item: QuickAddItem, customData?: Partial<QuickAddItem>): Promise<void> => {
     try {
       // Get JWT token from environment variable (same as useRealFridgeProducts)
       const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
+
+      // Merge item with custom data from modal
+      const finalItem = { ...item, ...customData };
 
       const response = await fetch('/api/user-products', {
         method: 'POST',
@@ -98,11 +101,11 @@ export const FridgeView: React.FC = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: item.name,
-          categoryId: item.categoryId,
-          quantity: item.defaultQuantity,
-          unit: item.defaultUnit,
-          expiresAt: undefined // No expiry date for quick add
+          name: finalItem.name,
+          categoryId: finalItem.categoryId,
+          quantity: finalItem.defaultQuantity,
+          unit: finalItem.defaultUnit,
+          expiresAt: finalItem.expiresAt || undefined
         })
       });
 
@@ -111,7 +114,7 @@ export const FridgeView: React.FC = () => {
         refresh();
 
         // Show success message
-        alert(`Dodano ${item.name} do lodówki`);
+        alert(`Dodano ${finalItem.name} do lodówki`);
       } else {
         throw new Error('Nie udało się dodać produktu');
       }

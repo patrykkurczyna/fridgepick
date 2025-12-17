@@ -58,6 +58,7 @@ export interface QuickAddItem {
   defaultUnit: DatabaseEnums['unit_type'];
   defaultQuantity: number;
   icon?: string;
+  expiresAt?: string | null; // opcjonalna data ważności
 }
 
 /** Stan komponentu dla expiry indicators */

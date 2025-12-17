@@ -1,0 +1,9 @@
+---
+// Add new product page
+import Layout from '@/layouts/Layout.astro';
+import { ProductFormView } from '@/components/product-form/ProductFormView';
+---
+
+<Layout title="Dodaj produkt - FridgePick">
+  <ProductFormView mode="create" client:load />
+</Layout>
