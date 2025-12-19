@@ -124,9 +124,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={isFirstPage}
           className={`
             relative inline-flex items-center px-2 py-2 rounded-l-lg text-sm font-medium
-            ${isFirstPage 
-              ? 'text-gray-300 cursor-not-allowed' 
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            ${isFirstPage
+              ? 'text-gray-300 cursor-not-allowed'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer'
             }
           `}
           aria-label="Poprzednia strona"
@@ -141,7 +141,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               key={index}
               onClick={() => handlePageChange(page)}
               className={`
-                relative inline-flex items-center px-4 py-2 text-sm font-medium
+                relative inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer
                 ${page === currentPage
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
@@ -164,9 +164,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={isLastPage}
           className={`
             relative inline-flex items-center px-2 py-2 rounded-r-lg text-sm font-medium
-            ${isLastPage 
-              ? 'text-gray-300 cursor-not-allowed' 
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            ${isLastPage
+              ? 'text-gray-300 cursor-not-allowed'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer'
             }
           `}
           aria-label="Następna strona"

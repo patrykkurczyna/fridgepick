@@ -185,7 +185,7 @@ export const ResetPasswordForm: React.FC = () => {
         <div className="text-center">
           <Button
             asChild
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
             size="lg"
           >
             <a href="/auth/login">Przejdź do logowania</a>

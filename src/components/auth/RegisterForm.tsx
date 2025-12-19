@@ -198,7 +198,7 @@ export const RegisterForm: React.FC = () => {
         <div className="text-center">
           <a
             href="/auth/login"
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+            className="text-sm font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
           >
             Przejdź do logowania
           </a>
@@ -377,7 +377,7 @@ export const RegisterForm: React.FC = () => {
         Masz już konto?{' '}
         <a
           href="/auth/login"
-          className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+          className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
         >
           Zaloguj się
         </a>

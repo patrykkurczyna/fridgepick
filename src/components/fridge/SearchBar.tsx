@@ -107,7 +107,7 @@ export const SearchBar: React.FC<SearchBarProps> = React.memo(({
             <button
               type="button"
               onClick={handleClear}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors rounded"
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors rounded cursor-pointer"
               aria-label="Wyczyść wyszukiwanie"
             >
               <XMarkIcon className="w-4 h-4" />

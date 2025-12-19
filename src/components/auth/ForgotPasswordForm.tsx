@@ -126,7 +126,7 @@ export const ForgotPasswordForm: React.FC = () => {
             Pamiętasz hasło?{' '}
             <a
               href="/auth/login"
-              className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+              className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
             >
               Zaloguj się
             </a>
@@ -218,7 +218,7 @@ export const ForgotPasswordForm: React.FC = () => {
       <div className="text-center text-sm text-gray-600">
         <a
           href="/auth/login"
-          className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+          className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
         >
           ← Powrót do logowania
         </a>

@@ -165,7 +165,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
             {!loading && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
               >
                 <XMarkIcon className="w-6 h-6" />
               </button>
@@ -264,7 +264,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleInputChange('expiresAt', getDefaultExpiryDate())}
-                className="mt-1 text-xs text-blue-600 hover:text-blue-800"
+                className="mt-1 text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
                 disabled={loading}
               >
                 Ustaw na +7 dni
@@ -284,14 +284,14 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Anuluj
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? 'Dodawanie...' : 'Dodaj produkt'}
               </button>

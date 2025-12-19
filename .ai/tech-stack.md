@@ -1,5 +1,14 @@
 ⏺ REKOMENDACJE
 
+🎨 UI/UX CODING STANDARDS
+
+1. **Interactive Elements - Cursor Pointer**
+   - ZAWSZE dodawaj `cursor-pointer` (Tailwind) lub `cursor: pointer` (CSS) do wszystkich interaktywnych elementów
+   - Dotyczy: buttons, links, clickable divs, icons, cards z onClick/onClickhandlers
+   - Wyjątki: elementy z `disabled` powinny mieć `cursor-not-allowed`
+   - Przykład Tailwind: `className="... cursor-pointer hover:bg-gray-100"`
+   - Przykład CSS: `style={{ cursor: 'pointer' }}`
+
 🔴 KRYTYCZNE PROBLEMY Z OBECNYM STACKIEM
 
 1. Astro 5 to overengineering

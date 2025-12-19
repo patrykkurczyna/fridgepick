@@ -90,7 +90,7 @@ export const ProductFormView: React.FC<ProductFormViewProps> = ({
               <p className="text-gray-600 mb-4">{categoriesError}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 cursor-pointer"
               >
                 Spróbuj ponownie
               </button>
@@ -110,7 +110,7 @@ export const ProductFormView: React.FC<ProductFormViewProps> = ({
             <div>
               <button
                 onClick={handleCancel}
-                className="text-gray-600 hover:text-gray-800 mb-2 flex items-center"
+                className="text-gray-600 hover:text-gray-800 mb-2 flex items-center cursor-pointer"
               >
                 <svg className="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />

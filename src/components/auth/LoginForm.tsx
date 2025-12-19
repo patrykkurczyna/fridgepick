@@ -181,7 +181,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
         <div className="text-sm">
           <a
             href="/auth/forgot-password"
-            className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+            className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
           >
             Zapomniałeś hasła?
           </a>
@@ -229,7 +229,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
         Nie masz konta?{' '}
         <a
           href="/auth/register"
-          className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors"
+          className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
         >
           Zarejestruj się
         </a>

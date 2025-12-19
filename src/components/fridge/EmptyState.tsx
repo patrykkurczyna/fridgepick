@@ -56,7 +56,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <div className="space-y-3">
           <button
             onClick={onAddFirst}
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer"
           >
             <PlusIcon className="w-5 h-5" />
             {isEmptyState ? 'Dodaj pierwszy produkt' : 'Dodaj nowy produkt'}

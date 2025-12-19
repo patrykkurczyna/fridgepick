@@ -50,7 +50,7 @@ export const FridgeFilters: React.FC<FridgeFiltersProps> = React.memo(({
           {hasActiveSearch && (
             <button
               onClick={onClearSearch}
-              className="text-sm text-gray-600 hover:text-gray-800 transition-colors px-3 py-1 rounded border border-gray-300 hover:border-gray-400"
+              className="text-sm text-gray-600 hover:text-gray-800 transition-colors px-3 py-1 rounded border border-gray-300 hover:border-gray-400 cursor-pointer"
               disabled={loading}
             >
               Wyczyść

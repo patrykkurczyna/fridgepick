@@ -152,7 +152,7 @@ export const FridgeView: React.FC = () => {
             <p className="text-red-600 mb-4">{error}</p>
             <button
               onClick={retry}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
             >
               Spróbuj ponownie
             </button>

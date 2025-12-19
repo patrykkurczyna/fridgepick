@@ -47,7 +47,7 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
             <Button
               asChild
               size="sm"
-              className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-sm"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-sm cursor-pointer"
             >
               <a href="/auth/register">
                 Zarejestruj się
@@ -58,7 +58,7 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
               onClick={handleLogout}
               size="sm"
               variant="outline"
-              className="border-yellow-400 text-yellow-900 hover:bg-yellow-100"
+              className="border-yellow-400 text-yellow-900 hover:bg-yellow-100 cursor-pointer"
             >
               Wyjdź
             </Button>

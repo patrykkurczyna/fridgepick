@@ -104,7 +104,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
           <div className="mt-4">
             <button
               onClick={handleAddFirst}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer"
             >
               Dodaj nowy produkt →
             </button>

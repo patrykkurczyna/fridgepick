@@ -38,7 +38,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
           {/* Logo */}
           <a
             href="/"
-            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+            className="flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
             aria-label="FridgePick - Strona główna"
           >
             <Logo size="sm" variant={variant} />
@@ -51,7 +51,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                 key={link.page}
                 href={link.href}
                 className={`
-                  text-sm font-medium transition-colors border-b-2 pb-0.5
+                  text-sm font-medium transition-colors border-b-2 pb-0.5 cursor-pointer
                   ${currentPage === link.page ? activeClass : `border-transparent ${textClass} ${hoverClass}`}
                 `}
               >
@@ -76,7 +76,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                 key={link.page}
                 href={link.href}
                 className={`
-                  text-xs font-medium transition-colors px-3 py-2 rounded-md
+                  text-xs font-medium transition-colors px-3 py-2 rounded-md cursor-pointer
                   ${currentPage === link.page ? 'bg-emerald-50 text-emerald-700' : `${textClass} ${hoverClass}`}
                 `}
               >

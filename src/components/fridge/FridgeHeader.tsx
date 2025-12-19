@@ -18,7 +18,7 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct }) => {
           {/* Logo - clickable link to home */}
           <a
             href="/"
-            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+            className="flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
             aria-label="Powrót do strony głównej"
           >
             <Logo size="sm" variant="light" />

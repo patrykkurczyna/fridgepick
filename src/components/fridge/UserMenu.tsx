@@ -42,7 +42,7 @@ export const UserMenu: React.FC = () => {
       {/* User button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
         aria-label="User menu"
         aria-expanded={isOpen}
       >
@@ -69,7 +69,7 @@ export const UserMenu: React.FC = () => {
           {/* Logout button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <ArrowRightOnRectangleIcon className="w-5 h-5 text-gray-500" />
             Wyloguj się
