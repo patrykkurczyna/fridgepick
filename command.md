@@ -1,22 +1,7 @@
-Jesteś doświadczonym full-stack web developerem specjalizującym się we wdrażaniu modułu rejestracji, logowania i odzyskiwania hasła użytkowników. Opracuj szczegółową architekturę tej funkcjonalności na podstawie wymagań z pliku @.ai/prd.md oraz stacku z @.ai/tech-stack.md.
+Twoim zadaniem jest implementacja elementów interfejsu użytkownika (stron i formularzy) dla procesu logowania, rejestracji i odzyskiwania konta. Specyfikacja znajduje się w: @.ai/auth-spec.md
 
-Zadbaj o zgodność z pozostałymi wymaganiami - nie możesz naruszyć istniejącego działania aplikacji opisanego w dokumentacji.
+Pamiętaj o założeniach z tego projektu - react i astro
 
-Specyfikacja powinna zawierać następujące elementy:
+Wykorzystaj podobną stylistykę do @src/components/fridge/FridgeView.tsx
 
-1. ARCHITEKTURA INTERFEJSU UŻYTKOWNIKA
-- Dokładny opis zmian w warstwie frontendu (stron, komponentów i layoutów w trybie auth i non-auth), w tym opis nowych elementów oraz tych do rozszerzenia o wymagania autentykacji
-- Dokładne rozdzielenie odpowiedzialności pomiędzy formularze i komponenty client-side React a strony Astro, biorąc pod uwagę ich integrację z backendem autentykacji oraz nawigacją i akcjami użytkownika
-- Opis przypadków walidacji i komunikatów błędów
-- Obsługę najważniejszych scenariuszy
-
-2. LOGIKA BACKENDOWA
-- Struktura endpointów API i modeli danych zgodnych z nowymi elementami interfejsu użytkownika
-- Mechanizm walidacji danych wejściowych
-- Obsługa wyjątków
-- Aktualizacja sposobu renderowania wybranych stron server-side biorąc pod uwagę @astro.config.mjs
-
-3. SYSTEM AUTENTYKACJI
-- Wykorzystanie Supabase Auth do realizacji funkcjonalności rejestracji, logowania, wylogowywania i odzyskiwania konta w połączeniu z Astro
-
-Przedstaw kluczowe wnioski w formie opisowej technicznej specyfikacji w języku polskim - bez docelowej implementacji, ale ze wskazaniem poszczególnych komponentów, modułów, serwisów i kontraktów. Po ukończeniu zadania, utwórz plik .ai/auth-spec.md i dodaj tam całą specyfikację.
+Nie implementuj backendu ani modyfikacji stanu aplikacji - tymi elementami zajmiemy się w dalszej kolejności

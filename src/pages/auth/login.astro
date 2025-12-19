@@ -1,0 +1,31 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+import { LoginForm } from '../../components/auth/LoginForm';
+
+const title = 'Logowanie';
+
+// TODO: Po implementacji middleware - sprawdź czy użytkownik już zalogowany
+// const session = await Astro.locals.supabase.auth.getSession();
+// if (session.data.session) {
+//   return Astro.redirect('/fridge');
+// }
+
+// Opcjonalny parametr redirect z URL
+const redirectTo = Astro.url.searchParams.get('redirect');
+---
+
+<AuthLayout title={title}>
+  <LoginForm client:load redirectTo={redirectTo} />
+
+  <div slot="footer">
+    <p class="text-gray-500">
+      Wróć do{' '}
+      <a
+        href="/"
+        class="text-emerald-600 hover:text-emerald-500 transition-colors font-medium"
+      >
+        strony głównej
+      </a>
+    </p>
+  </div>
+</AuthLayout>

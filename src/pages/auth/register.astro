@@ -1,0 +1,28 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+import { RegisterForm } from '../../components/auth/RegisterForm';
+
+const title = 'Rejestracja';
+
+// TODO: Po implementacji middleware - sprawdź czy użytkownik już zalogowany
+// const session = await Astro.locals.supabase.auth.getSession();
+// if (session.data.session) {
+//   return Astro.redirect('/fridge');
+// }
+---
+
+<AuthLayout title={title}>
+  <RegisterForm client:load />
+
+  <div slot="footer">
+    <p class="text-gray-500">
+      Wróć do{' '}
+      <a
+        href="/"
+        class="text-emerald-600 hover:text-emerald-500 transition-colors font-medium"
+      >
+        strony głównej
+      </a>
+    </p>
+  </div>
+</AuthLayout>
