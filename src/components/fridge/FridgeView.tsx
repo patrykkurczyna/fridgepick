@@ -14,8 +14,6 @@ import type { QuickAddItem } from '@/types/fridge';
  * Zarządza stanem produktów, filtrowaniem i paginacją
  */
 export const FridgeView: React.FC = () => {
-  console.log('[FridgeView] RENDER');
-
   const { categories } = useProductCategories();
 
   const {

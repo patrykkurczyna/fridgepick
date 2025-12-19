@@ -21,8 +21,6 @@ export const SearchBar: React.FC<SearchBarProps> = React.memo(({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  console.log('[SearchBar] RENDER - query:', query);
-
   /**
    * Handle input change - directly call onSearch without debounce
    * (debounce is handled by parent hook)
@@ -122,21 +120,11 @@ export const SearchBar: React.FC<SearchBarProps> = React.memo(({
     </form>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if query or onSearch changes
-  const shouldNotRerender =
+  // Custom comparison - only re-render if props actually change
+  return (
     prevProps.query === nextProps.query &&
     prevProps.onSearch === nextProps.onSearch &&
     prevProps.placeholder === nextProps.placeholder &&
-    prevProps.disabled === nextProps.disabled;
-
-  if (!shouldNotRerender) {
-    console.log('[SearchBar] Props changed:', {
-      query: prevProps.query !== nextProps.query ? `${prevProps.query} → ${nextProps.query}` : 'same',
-      onSearch: prevProps.onSearch !== nextProps.onSearch ? 'changed' : 'same',
-      placeholder: prevProps.placeholder !== nextProps.placeholder ? 'changed' : 'same',
-      disabled: prevProps.disabled !== nextProps.disabled ? `${prevProps.disabled} → ${nextProps.disabled}` : 'same'
-    });
-  }
-
-  return shouldNotRerender;
+    prevProps.disabled === nextProps.disabled
+  );
 });

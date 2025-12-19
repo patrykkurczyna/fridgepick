@@ -32,8 +32,6 @@ export const useRealFridgeProducts = () => {
 
   // Fetch products when debounced search or refresh trigger changes
   useEffect(() => {
-    console.log('[Hook] useEffect triggered - debouncedSearch:', debouncedSearch, 'refreshTrigger:', refreshTrigger);
-
     const fetchProducts = async () => {
       try {
         // Determine if this is a search or initial load
@@ -80,8 +78,6 @@ export const useRealFridgeProducts = () => {
           createdAt: product.createdAt,
           updatedAt: product.createdAt
         }));
-
-        console.log('[Hook] Fetch complete - products count:', convertedProducts.length);
 
         setProducts(convertedProducts);
         setError(null);
