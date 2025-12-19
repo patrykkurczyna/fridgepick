@@ -5,6 +5,7 @@ import type { UserDTO } from '@/types';
 // localStorage keys
 const ACCESS_TOKEN_KEY = 'fridgepick_access_token';
 const USER_KEY = 'fridgepick_user';
+const DEMO_CREDENTIALS_KEY = 'fridgepick_demo_credentials';
 
 interface AuthState {
   user: UserDTO | null;
@@ -304,7 +305,9 @@ export const useAuth = (): AuthState & {
   );
 
   /**
-   * Create demo user account
+   * Create demo user account or reuse existing demo user
+   * This function checks localStorage for existing demo credentials
+   * and logs in with them if available, otherwise creates a new demo user
    */
   const createDemoUser = useCallback(async (): Promise<{
     success: boolean;
@@ -314,6 +317,37 @@ export const useAuth = (): AuthState & {
     try {
       setState((prev) => ({ ...prev, loading: true }));
 
+      // Check if we have existing demo credentials in localStorage
+      const storedCredentials = typeof window !== 'undefined'
+        ? localStorage.getItem(DEMO_CREDENTIALS_KEY)
+        : null;
+
+      if (storedCredentials) {
+        try {
+          const { email, password } = JSON.parse(storedCredentials);
+
+          // Try to login with existing demo credentials
+          const loginResult = await login(email, password, false);
+
+          if (loginResult.success) {
+            console.log('Logged in with existing demo user:', email);
+            setState((prev) => ({ ...prev, loading: false }));
+            return {
+              success: true,
+              demoEmail: email
+            };
+          } else {
+            // Login failed (user might have been deleted), remove invalid credentials
+            console.log('Existing demo credentials invalid, creating new demo user');
+            localStorage.removeItem(DEMO_CREDENTIALS_KEY);
+          }
+        } catch (parseError) {
+          console.error('Error parsing demo credentials:', parseError);
+          localStorage.removeItem(DEMO_CREDENTIALS_KEY);
+        }
+      }
+
+      // No existing credentials or login failed - create new demo user
       const response = await fetch('/api/auth/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -332,6 +366,19 @@ export const useAuth = (): AuthState & {
         // Save to cache
         saveToCache(user, data.session.access_token);
 
+        // Save demo credentials to localStorage for future use
+        // Note: We need to get the password from the response
+        // The API should return demoPassword for this purpose
+        if (data.demoEmail && (data as any).demoPassword) {
+          localStorage.setItem(
+            DEMO_CREDENTIALS_KEY,
+            JSON.stringify({
+              email: data.demoEmail,
+              password: (data as any).demoPassword,
+            })
+          );
+        }
+
         setState({
           user,
           loading: false,
@@ -348,7 +395,7 @@ export const useAuth = (): AuthState & {
       setState((prev) => ({ ...prev, loading: false }));
       return { success: false, error: 'Wystąpił błąd połączenia' };
     }
-  }, [saveToCache]);
+  }, [saveToCache, login]);
 
   /**
    * Logout current user

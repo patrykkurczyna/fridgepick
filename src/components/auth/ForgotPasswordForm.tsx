@@ -54,31 +54,26 @@ export const ForgotPasswordForm: React.FC = () => {
     setFormState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // TODO: Implementacja wywołania API /api/auth/forgot-password
-      // To będzie zaimplementowane w kolejnym etapie (backend)
+      // Call the forgot password API
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formState.email
+        })
+      });
 
-      // Placeholder - symulacja wywołania API
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const data = await response.json();
 
-      // Po implementacji backendu:
-      // const response = await fetch('/api/auth/forgot-password', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     email: formState.email
-      //   })
-      // });
-      //
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.error?.message || 'Wysłanie linku nie powiodło się');
-      // }
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Wysłanie linku nie powiodło się');
+      }
 
-      console.log('Forgot password attempt:', {
+      console.log('Password reset email sent:', {
         email: formState.email
       });
 
-      // Pokaż komunikat sukcesu
+      // Show success message
       setFormState(prev => ({
         ...prev,
         isLoading: false,

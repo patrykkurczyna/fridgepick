@@ -90,6 +90,7 @@ export const POST: APIRoute = async ({ locals }) => {
 
     // Return success with demo user data
     // Note: Supabase SSR automatically sets HTTP-only cookies via the middleware
+    // We also return demoPassword so the client can save it to localStorage for reuse
     return new Response(
       JSON.stringify({
         success: true,
@@ -100,6 +101,7 @@ export const POST: APIRoute = async ({ locals }) => {
           isEmailVerified: true, // Demo users are auto-verified
         },
         demoEmail,
+        demoPassword, // Return password for localStorage caching (client-side only)
         expiresIn: '7 dni',
         expiresAt: expiryDate.toISOString(),
         session: {

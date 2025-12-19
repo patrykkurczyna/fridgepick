@@ -6,7 +6,16 @@ import { DemoButton } from '../components/DemoButton';
 const title = "FridgePick MVP";
 const description = "Inteligentna aplikacja do planowania posiłków";
 
-// Check if user is already logged in
+// Check for auth code from email link (password recovery, magic link, etc.)
+const code = Astro.url.searchParams.get('code');
+
+// If there's a code in the URL, it's likely a password recovery or email confirmation
+// Redirect to reset-password page which will handle the code exchange
+if (code) {
+  return Astro.redirect(`/auth/reset-password?code=${code}`);
+}
+
+// Check if user is already logged in (and it's not a recovery session)
 if (Astro.locals.session && Astro.locals.user) {
   // User is authenticated, redirect to fridge
   // Demo users get ?demo=true parameter

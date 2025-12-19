@@ -1,9 +1,6 @@
 import React, { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-
-interface ResetPasswordFormProps {
-  token: string;
-}
+import { createSupabaseClientInstance } from '@/db/supabase.client';
 
 interface ResetPasswordFormState {
   newPassword: string;
@@ -60,8 +57,9 @@ const getPasswordStrength = (password: string): {
 /**
  * Formularz resetowania hasła
  * Umożliwia ustawienie nowego hasła po kliknięciu w link z emaila
+ * Supabase automatycznie loguje użytkownika z linku, więc używamy aktualnej sesji
  */
-export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token }) => {
+export const ResetPasswordForm: React.FC = () => {
   const [formState, setFormState] = useState<ResetPasswordFormState>({
     newPassword: '',
     confirmPassword: '',
@@ -102,37 +100,47 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token }) =
     setFormState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // TODO: Implementacja wywołania API /api/auth/reset-password
-      // To będzie zaimplementowane w kolejnym etapie (backend)
-
-      // Placeholder - symulacja wywołania API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Po implementacji backendu:
-      // const response = await fetch('/api/auth/reset-password', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     token: token,
-      //     newPassword: formState.newPassword
-      //   })
-      // });
-      //
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.error?.message || 'Resetowanie hasła nie powiodło się');
-      // }
-
-      console.log('Reset password attempt:', {
-        token: token.substring(0, 10) + '...'
+      // Call the reset password API
+      // Note: Supabase automatically validates the token from the session
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: formState.newPassword
+        })
       });
 
-      // Pokaż komunikat sukcesu
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Resetowanie hasła nie powiodło się');
+      }
+
+      console.log('Password reset successful');
+
+      // Show success message
       setFormState(prev => ({
         ...prev,
         isLoading: false,
         success: true
       }));
+
+      // Logout user (clear recovery session) and redirect to login after 2 seconds
+      setTimeout(async () => {
+        try {
+          // Use Supabase client to sign out immediately (clears session)
+          const supabase = createSupabaseClientInstance();
+          await supabase.auth.signOut();
+
+          // Also call the logout API to clear server-side cookies
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+          console.error('Logout error:', e);
+        }
+
+        // Force redirect to login page with logged_out param
+        window.location.href = '/auth/login?logged_out=true';
+      }, 2000);
 
     } catch (err) {
       setFormState(prev => ({
@@ -167,8 +175,10 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token }) =
             Hasło zostało zmienione!
           </h3>
           <p className="text-sm text-green-800 mb-4">
-            Twoje hasło zostało pomyślnie zaktualizowane. Możesz teraz zalogować się używając
-            nowego hasła.
+            Twoje hasło zostało pomyślnie zaktualizowane. Za chwilę zostaniesz przekierowany na stronę logowania.
+          </p>
+          <p className="text-xs text-green-700">
+            Zaloguj się używając nowego hasła.
           </p>
         </div>
 

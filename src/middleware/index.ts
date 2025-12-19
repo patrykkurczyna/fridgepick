@@ -50,6 +50,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createSupabaseServerInstance(context.request, context.cookies);
   context.locals.supabase = supabase;
 
+  // Check for auth code in URL (from email links)
+  const code = context.url.searchParams.get('code');
+  if (code) {
+    // Exchange code for session (password recovery, magic link, etc.)
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      console.error('Error exchanging code for session:', error);
+    }
+  }
+
   // Get current session
   const {
     data: { session },
@@ -90,8 +100,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Special case: Allow demo mode access to /fridge
   const isDemoMode = pathname === '/fridge' && context.url.searchParams.get('demo') === 'true';
 
-  // If path is public or demo mode, allow access
-  if (isPublic || isDemoMode) {
+  // Special case: Password recovery flow - allow access to reset-password page
+  // This includes when there's a code parameter (from email link)
+  const isPasswordRecovery = pathname === '/auth/reset-password';
+
+  // If path is public, demo mode, or password recovery, allow access
+  if (isPublic || isDemoMode || isPasswordRecovery) {
     return next();
   }
 

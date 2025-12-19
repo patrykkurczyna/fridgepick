@@ -4,8 +4,11 @@ import { LoginForm } from '../../components/auth/LoginForm';
 
 const title = 'Logowanie';
 
-// Check if user is already logged in
-if (Astro.locals.session) {
+// Check if user just logged out (from reset password flow)
+const justLoggedOut = Astro.url.searchParams.get('logged_out') === 'true';
+
+// Check if user is already logged in (unless they just logged out)
+if (Astro.locals.session && !justLoggedOut) {
   // User is already authenticated, redirect to fridge or the original destination
   const redirectTo = Astro.url.searchParams.get('redirect');
   if (redirectTo) {
