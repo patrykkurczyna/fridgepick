@@ -73,6 +73,7 @@ export class UserProductService implements IUserProductService {
 
       // Get total count for pagination
       const totalCount = await this.repository.countByUserId(userId, {
+        search: filters.search,
         category: filters.category,
         expired: filters.expired,
         expiring_soon: filters.expiring_soon
@@ -500,6 +501,11 @@ export class UserProductService implements IUserProductService {
    */
   private buildFilters(queryParams: UserProductsQueryParams): UserProductFilters {
     const filters: UserProductFilters = {};
+
+    // Search filter
+    if (queryParams.search !== undefined && queryParams.search.trim().length >= 2) {
+      filters.search = queryParams.search.trim();
+    }
 
     // Category filter
     if (queryParams.category !== undefined) {

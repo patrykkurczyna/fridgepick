@@ -430,6 +430,7 @@ export interface ListQueryParams {
 
 /** Query parameters for user products */
 export interface UserProductsQueryParams extends ListQueryParams {
+  search?: string;
   category?: number;
   expired?: boolean;
   expiring_soon?: number;

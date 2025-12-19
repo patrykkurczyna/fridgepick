@@ -84,6 +84,19 @@ export const UpdateUserProductSchema = CreateUserProductSchema;
  * Validation schema for user products query parameters
  */
 export const UserProductsQuerySchema = z.object({
+  search: z
+    .string()
+    .optional()
+    .transform((val) => val?.trim() || undefined)
+    .refine(
+      (val) => val === undefined || val.length >= 2,
+      'Search query must be at least 2 characters'
+    )
+    .refine(
+      (val) => val === undefined || val.length <= 100,
+      'Search query must be at most 100 characters'
+    ),
+
   category: z
     .string()
     .optional()
@@ -92,7 +105,7 @@ export const UserProductsQuerySchema = z.object({
       (val) => val === undefined || (!isNaN(val) && val > 0),
       'Category must be a positive integer'
     ),
-  
+
   expired: z
     .string()
     .optional()
@@ -106,7 +119,7 @@ export const UserProductsQuerySchema = z.object({
       (val) => val === undefined || typeof val === 'boolean',
       'Expired must be true or false'
     ),
-  
+
   expiring_soon: z
     .string()
     .optional()
@@ -115,13 +128,13 @@ export const UserProductsQuerySchema = z.object({
       (val) => val === undefined || (!isNaN(val) && val > 0 && val <= 365),
       'Expiring soon must be a positive integer between 1 and 365'
     ),
-  
+
   sort: z
     .enum(['name', 'expires_at', 'created_at'], {
       errorMap: () => ({ message: 'Sort must be one of: name, expires_at, created_at' })
     })
     .optional(),
-  
+
   limit: z
     .string()
     .optional()
@@ -130,7 +143,7 @@ export const UserProductsQuerySchema = z.object({
       (val) => val === undefined || (!isNaN(val) && val > 0 && val <= 100),
       'Limit must be a positive integer between 1 and 100'
     ),
-  
+
   offset: z
     .string()
     .optional()

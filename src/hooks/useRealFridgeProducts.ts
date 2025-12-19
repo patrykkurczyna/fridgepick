@@ -3,21 +3,45 @@ import type { ProductDTO } from '@/types/fridge';
 import type { UserProductsResponse } from '@/types';
 
 /**
- * Hook for fetching real products from API with proper authentication
+ * Hook for fetching real products from API with proper authentication and search
  */
 export const useRealFridgeProducts = () => {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   // Get token from environment variable
   const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
 
+  // Debounce search query (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch products when debounced search or refresh trigger changes
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('/api/user-products', {
+        setLoading(true);
+
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (debouncedSearch && debouncedSearch.trim().length >= 2) {
+          params.append('search', debouncedSearch.trim());
+        }
+
+        const url = `/api/user-products${params.toString() ? `?${params.toString()}` : ''}`;
+
+        const response = await fetch(url, {
           headers: {
             'Authorization': `Bearer ${jwtToken}`,
             'Content-Type': 'application/json'
@@ -46,6 +70,7 @@ export const useRealFridgeProducts = () => {
         }));
 
         setProducts(convertedProducts);
+        setError(null);
         setLoading(false);
 
       } catch (error) {
@@ -55,11 +80,11 @@ export const useRealFridgeProducts = () => {
     };
 
     fetchProducts();
-  }, [refreshTrigger]);
+  }, [debouncedSearch, refreshTrigger, jwtToken]);
 
   // Handlers for UI interactions
   const handleSearch = (query: string) => {
-    // TODO: Implement search functionality
+    setSearchQuery(query);
   };
 
   const handleSortChange = (sortBy: string) => {
@@ -82,7 +107,8 @@ export const useRealFridgeProducts = () => {
   };
 
   const clearSearch = () => {
-    // TODO: Clear search functionality
+    setSearchQuery('');
+    setDebouncedSearch('');
   };
 
   return {
@@ -90,7 +116,7 @@ export const useRealFridgeProducts = () => {
     products,
     loading,
     error,
-    searchQuery: '',
+    searchQuery,
     sortBy: 'expires_at',
     currentPage: 1,
     pagination: {
@@ -101,7 +127,7 @@ export const useRealFridgeProducts = () => {
       offset: 0
     },
     filters: {
-      query: '',
+      query: searchQuery,
       sortBy: 'expires_at',
       sortDirection: 'asc' as const,
       showExpired: false,

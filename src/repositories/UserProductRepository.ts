@@ -6,6 +6,7 @@ import { DatabaseError } from './ProductCategoryRepository';
  * Filter parameters for user products queries
  */
 export interface UserProductFilters {
+  search?: string;
   category?: number;
   expired?: boolean;
   expiring_soon?: number;
@@ -111,6 +112,10 @@ export class UserProductRepository implements IUserProductRepository {
         .eq('user_id', userId);
 
       // Apply filters
+      if (filters.search) {
+        query = query.ilike('name', `%${filters.search}%`);
+      }
+
       if (filters.category) {
         query = query.eq('category_id', filters.category);
       }
@@ -230,6 +235,10 @@ export class UserProductRepository implements IUserProductRepository {
         .eq('user_id', userId);
 
       // Apply the same filters as findByUserId (excluding pagination/sort)
+      if (filters.search) {
+        query = query.ilike('name', `%${filters.search}%`);
+      }
+
       if (filters.category) {
         query = query.eq('category_id', filters.category);
       }
