@@ -6,7 +6,7 @@ import { ProductsSection } from './ProductsSection';
 import { Pagination } from './Pagination';
 import { useRealFridgeProducts as useFridgeProducts } from '@/hooks/useRealFridgeProducts';
 import { useProductCategories } from '@/hooks/useProductCategories';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, getAccessToken } from '@/hooks/useAuth';
 import type { QuickAddItem } from '@/types/fridge';
 
 /**
@@ -59,7 +59,11 @@ export const FridgeView: React.FC = () => {
     }
 
     try {
-      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
+      const jwtToken = getAccessToken();
+      if (!jwtToken) {
+        alert('Brak autoryzacji. Zaloguj się ponownie.');
+        return;
+      }
 
       const response = await fetch(`/api/user-products/${productId}`, {
         method: 'DELETE',
@@ -89,8 +93,12 @@ export const FridgeView: React.FC = () => {
    */
   const handleQuickAdd = async (item: QuickAddItem, customData?: Partial<QuickAddItem>): Promise<void> => {
     try {
-      // Get JWT token from environment variable (same as useRealFridgeProducts)
-      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
+      // Get JWT token from useAuth (dynamic token)
+      const jwtToken = getAccessToken();
+      if (!jwtToken) {
+        alert('Brak autoryzacji. Zaloguj się ponownie.');
+        throw new Error('No access token');
+      }
 
       // Merge item with custom data from modal
       const finalItem = { ...item, ...customData };
@@ -104,8 +112,8 @@ export const FridgeView: React.FC = () => {
         body: JSON.stringify({
           name: finalItem.name,
           categoryId: finalItem.categoryId,
-          quantity: finalItem.defaultQuantity,
-          unit: finalItem.defaultUnit,
+          quantity: (finalItem as any).quantity || finalItem.defaultQuantity,
+          unit: (finalItem as any).unit || finalItem.defaultUnit,
           expiresAt: finalItem.expiresAt || undefined
         })
       });

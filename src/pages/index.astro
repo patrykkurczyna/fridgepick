@@ -1,20 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Logo } from '../components/Logo';
+import { DemoButton } from '../components/DemoButton';
 
 const title = "FridgePick MVP";
 const description = "Inteligentna aplikacja do planowania posiłków";
 
-// TODO: Po implementacji middleware - sprawdź czy użytkownik już zalogowany
-// const session = await Astro.locals.supabase.auth.getSession();
-// if (session.data.session) {
-//   const user = session.data.session.user;
-//   // Sprawdź czy to użytkownik demo
-//   if (user.user_metadata?.is_demo) {
-//     return Astro.redirect('/fridge?demo=true');
-//   }
-//   return Astro.redirect('/fridge');
-// }
+// Check if user is already logged in
+if (Astro.locals.session && Astro.locals.user) {
+  // User is authenticated, redirect to fridge
+  // Demo users get ?demo=true parameter
+  if (Astro.locals.user.user_metadata?.is_demo) {
+    return Astro.redirect('/fridge?demo=true');
+  }
+  return Astro.redirect('/fridge');
+}
 ---
 
 <Layout title={title}>
@@ -36,17 +36,7 @@ const description = "Inteligentna aplikacja do planowania posiłków";
             <!-- Główne przyciski CTA -->
             <div class="space-y-4 mb-16">
                 <!-- Przycisk Demo -->
-                <div class="space-y-2">
-                    <a
-                        href="/fridge?demo=true"
-                        class="block bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-8 py-4 rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                        🎭 Wypróbuj tryb Demo
-                    </a>
-                    <p class="text-sm text-gray-500">
-                        Przetestuj aplikację bez rejestracji
-                    </p>
-                </div>
+                <DemoButton client:load />
 
                 <!-- Przyciski logowania i rejestracji -->
                 <div class="flex gap-4 justify-center pt-4">

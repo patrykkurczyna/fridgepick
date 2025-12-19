@@ -4,11 +4,15 @@ import { LoginForm } from '../../components/auth/LoginForm';
 
 const title = 'Logowanie';
 
-// TODO: Po implementacji middleware - sprawdź czy użytkownik już zalogowany
-// const session = await Astro.locals.supabase.auth.getSession();
-// if (session.data.session) {
-//   return Astro.redirect('/fridge');
-// }
+// Check if user is already logged in
+if (Astro.locals.session) {
+  // User is already authenticated, redirect to fridge or the original destination
+  const redirectTo = Astro.url.searchParams.get('redirect');
+  if (redirectTo) {
+    return Astro.redirect(decodeURIComponent(redirectTo));
+  }
+  return Astro.redirect('/fridge');
+}
 
 // Opcjonalny parametr redirect z URL
 const redirectTo = Astro.url.searchParams.get('redirect');

@@ -100,10 +100,10 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
       await onSubmit(item, {
         name: formData.name.trim(),
         categoryId: formData.categoryId,
-        defaultQuantity: formData.quantity,
-        defaultUnit: formData.unit,
+        quantity: formData.quantity,
+        unit: formData.unit,
         expiresAt: formData.expiresAt || null
-      });
+      } as any);
     } catch (error) {
       setError('Nie udało się dodać produktu. Spróbuj ponownie.');
     }

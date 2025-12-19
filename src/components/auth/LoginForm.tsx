@@ -1,8 +1,9 @@
 import React, { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LoginFormProps {
-  redirectTo?: string;
+  redirectTo?: string | null;
 }
 
 interface LoginFormState {
@@ -37,6 +38,7 @@ const validateLoginForm = (email: string, password: string): string | null => {
  * Obsługuje walidację client-side i wywołanie API logowania
  */
 export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
+  const { login } = useAuth();
   const [formState, setFormState] = useState<LoginFormState>({
     email: '',
     password: '',
@@ -75,40 +77,20 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
     setFormState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // TODO: Implementacja wywołania API /api/auth/login
-      // To będzie zaimplementowane w kolejnym etapie (backend + useAuth)
+      // Wywołanie API logowania przez useAuth hook
+      const result = await login(formState.email, formState.password, formState.rememberMe);
 
-      // Placeholder - symulacja wywołania API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Po implementacji backendu:
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     email: formState.email,
-      //     password: formState.password
-      //   })
-      // });
-      //
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.error?.message || 'Logowanie nie powiodło się');
-      // }
-      //
-      // const data = await response.json();
-      // // Zapisz token, zaktualizuj useAuth, przekieruj
-      // window.location.href = redirectTo || '/fridge';
-
-      console.log('Login attempt:', {
-        email: formState.email,
-        rememberMe: formState.rememberMe,
-        redirectTo
-      });
-
-      // Tymczasowo - pokazujemy sukces
-      alert('Logowanie będzie działać po implementacji backendu');
-
+      if (result.success) {
+        // Sukces - przekieruj użytkownika
+        const destination = redirectTo || '/fridge';
+        window.location.href = destination;
+      } else {
+        // Błąd - wyświetl komunikat
+        setFormState(prev => ({
+          ...prev,
+          error: result.error || 'Logowanie nie powiodło się'
+        }));
+      }
     } catch (err) {
       setFormState(prev => ({
         ...prev,

@@ -113,33 +113,41 @@ export const RegisterForm: React.FC = () => {
     setFormState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // TODO: Implementacja wywołania API /api/auth/register
-      // To będzie zaimplementowane w kolejnym etapie (backend)
-
-      // Placeholder - symulacja wywołania API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Po implementacji backendu:
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     email: formState.email,
-      //     password: formState.password,
-      //     confirmPassword: formState.confirmPassword
-      //   })
-      // });
-      //
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.error?.message || 'Rejestracja nie powiodła się');
-      // }
-
-      console.log('Registration attempt:', {
-        email: formState.email
+      // Call the registration API
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formState.email,
+          password: formState.password
+        })
       });
 
-      // Pokaż komunikat sukcesu
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Rejestracja nie powiodła się');
+      }
+
+      console.log('Registration successful:', {
+        email: formState.email,
+        requiresEmailVerification: data.requiresEmailVerification
+      });
+
+      // If email verification is NOT required (auto-login), redirect to fridge
+      if (!data.requiresEmailVerification) {
+        // Store session data if provided
+        if (data.session) {
+          localStorage.setItem('sb-access-token', data.session.access_token);
+          localStorage.setItem('sb-refresh-token', data.session.refresh_token);
+        }
+
+        // Redirect to fridge
+        window.location.href = '/fridge';
+        return;
+      }
+
+      // Otherwise, show success message with email verification instructions
       setFormState(prev => ({
         ...prev,
         isLoading: false,

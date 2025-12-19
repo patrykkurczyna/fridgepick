@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { 
-  ProductFormData, 
-  ValidationErrors, 
-  LoadingState, 
-  ValidationResult 
+import { getAccessToken } from '@/hooks/useAuth';
+import type {
+  ProductFormData,
+  ValidationErrors,
+  LoadingState,
+  ValidationResult
 } from '@/types/product-form';
-import type { 
-  CreateUserProductRequest, 
-  UpdateUserProductRequest, 
+import type {
+  CreateUserProductRequest,
+  UpdateUserProductRequest,
   UserProductResponse,
-  DatabaseEnums 
+  DatabaseEnums
 } from '@/types';
 import { UNIT_TYPES } from '@/types';
 
@@ -155,10 +156,13 @@ export const useProductForm = (mode: 'create' | 'edit', productId?: string) => {
     if (mode !== 'edit' || !productId) return;
 
     setLoadingState(prev => ({ ...prev, form: true }));
-    
+
     try {
-      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
-      
+      const jwtToken = getAccessToken();
+      if (!jwtToken) {
+        throw new Error('Brak autoryzacji. Zaloguj się ponownie.');
+      }
+
       const response = await fetch(`/api/user-products/${productId}`, {
         headers: {
           'Authorization': `Bearer ${jwtToken}`,
@@ -204,7 +208,7 @@ export const useProductForm = (mode: 'create' | 'edit', productId?: string) => {
    */
   const submitForm = useCallback(async (): Promise<boolean> => {
     const validation = validateForm();
-    
+
     if (!validation.isValid) {
       setValidationErrors(validation.errors);
       return false;
@@ -214,8 +218,12 @@ export const useProductForm = (mode: 'create' | 'edit', productId?: string) => {
     setSubmitError(null);
 
     try {
-      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
-      
+      const jwtToken = getAccessToken();
+      if (!jwtToken) {
+        setSubmitError('Brak autoryzacji. Zaloguj się ponownie.');
+        return false;
+      }
+
       const requestData: CreateUserProductRequest | UpdateUserProductRequest = {
         name: formData.name.trim(),
         categoryId: formData.categoryId!,
@@ -271,10 +279,14 @@ export const useProductForm = (mode: 'create' | 'edit', productId?: string) => {
     if (mode !== 'edit' || !productId) return false;
 
     setLoadingState(prev => ({ ...prev, delete: true }));
-    
+
     try {
-      const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
-      
+      const jwtToken = getAccessToken();
+      if (!jwtToken) {
+        setSubmitError('Brak autoryzacji. Zaloguj się ponownie.');
+        return false;
+      }
+
       const response = await fetch(`/api/user-products/${productId}`, {
         method: 'DELETE',
         headers: {

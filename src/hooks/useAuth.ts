@@ -1,107 +1,440 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { createSupabaseClientInstance } from '../db/supabase.client.ts';
 import type { UserDTO } from '@/types';
 
-// Placeholder useAuth hook - będzie zastąpiony prawdziwym podczas implementacji auth
+// localStorage keys
+const ACCESS_TOKEN_KEY = 'fridgepick_access_token';
+const USER_KEY = 'fridgepick_user';
+
 interface AuthState {
   user: UserDTO | null;
   loading: boolean;
   isAuthenticated: boolean;
 }
 
+interface LoginResponse {
+  success: boolean;
+  user?: {
+    id: string;
+    email: string;
+    isDemo: boolean;
+    isEmailVerified: boolean;
+  };
+  session?: {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+  };
+  error?: string;
+}
+
+interface RegisterResponse {
+  success: boolean;
+  user?: {
+    id: string;
+    email: string;
+    isDemo: boolean;
+    isEmailVerified: boolean;
+  };
+  requiresEmailVerification?: boolean;
+  message?: string;
+  error?: string;
+}
+
+interface DemoResponse {
+  success: boolean;
+  user?: {
+    id: string;
+    email: string;
+    isDemo: boolean;
+    isEmailVerified: boolean;
+  };
+  demoEmail?: string;
+  expiresIn?: string;
+  session?: {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+  };
+  message?: string;
+  error?: string;
+}
+
+interface LogoutResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
 /**
- * Temporary useAuth hook for development
- * W prawdziwej implementacji będzie to pełnowartościowy hook autoryzacji
+ * Helper function to get the current access token from localStorage
+ * @returns Access token string or null if not available
+ */
+export const getAccessToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+};
+
+/**
+ * Real useAuth hook with Supabase integration
+ * Manages authentication state, session sync, and token caching
  */
 export const useAuth = (): AuthState & {
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  register: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  register: (email: string, password: string) => Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean }>;
+  createDemoUser: () => Promise<{ success: boolean; error?: string; demoEmail?: string }>;
+  getAccessToken: () => string | null;
 } => {
   const [state, setState] = useState<AuthState>({
     user: null,
     loading: true,
-    isAuthenticated: false
+    isAuthenticated: false,
   });
 
-  // Mock authentication check
-  useEffect(() => {
-    const checkAuth = () => {
-      // For development, simulate authenticated user
-      // In production, this would check JWT token, etc.
-      const mockUser: UserDTO = {
-        id: 'mock-user-id',
-        email: 'user@example.com',
-        isDemo: false,
-        isEmailVerified: true,
-        accessToken: 'mock-jwt-token-for-development'
-      } as any;
+  // Initialize Supabase client
+  const supabase = createSupabaseClientInstance();
 
-      setState({
-        user: mockUser,
-        loading: false,
-        isAuthenticated: true
-      });
-    };
+  /**
+   * Load user from localStorage cache (fast initial load)
+   */
+  const loadUserFromCache = useCallback(() => {
+    if (typeof window === 'undefined') return null;
 
-    // Simulate loading time
-    setTimeout(checkAuth, 100);
+    const cachedUser = localStorage.getItem(USER_KEY);
+    const cachedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+
+    if (cachedUser && cachedToken) {
+      try {
+        return JSON.parse(cachedUser) as UserDTO;
+      } catch {
+        localStorage.removeItem(USER_KEY);
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+        return null;
+      }
+    }
+
+    return null;
   }, []);
 
-  const login = async (email: string, password: string) => {
-    // Mock login implementation
-    setState(prev => ({ ...prev, loading: true }));
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: UserDTO = {
-      id: 'mock-user-id',
-      email,
-      isDemo: false,
-      isEmailVerified: true,
-      accessToken: 'mock-jwt-token-for-development'
-    } as any;
+  /**
+   * Save user and token to localStorage
+   */
+  const saveToCache = useCallback((user: UserDTO, accessToken: string) => {
+    if (typeof window === 'undefined') return;
 
-    setState({
-      user: mockUser,
-      loading: false,
-      isAuthenticated: true
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  }, []);
+
+  /**
+   * Clear user and token from localStorage
+   */
+  const clearCache = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+  }, []);
+
+  /**
+   * Check authentication status and load session
+   */
+  const checkAuth = useCallback(async () => {
+    try {
+      // First, try to load from cache (instant)
+      const cachedUser = loadUserFromCache();
+      if (cachedUser) {
+        setState({
+          user: cachedUser,
+          loading: true, // Still loading to verify with server
+          isAuthenticated: true,
+        });
+      }
+
+      // Then verify with Supabase
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const user: UserDTO = {
+          id: session.user.id,
+          email: session.user.email!,
+          isDemo: session.user.user_metadata?.is_demo ?? false,
+          isEmailVerified: session.user.email_confirmed_at !== null,
+        };
+
+        // Update cache
+        saveToCache(user, session.access_token);
+
+        setState({
+          user,
+          loading: false,
+          isAuthenticated: true,
+        });
+      } else {
+        // No session - clear cache
+        clearCache();
+
+        setState({
+          user: null,
+          loading: false,
+          isAuthenticated: false,
+        });
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      clearCache();
+
+      setState({
+        user: null,
+        loading: false,
+        isAuthenticated: false,
+      });
+    }
+  }, [supabase, loadUserFromCache, saveToCache, clearCache]);
+
+  /**
+   * Login with email and password
+   */
+  const login = useCallback(
+    async (
+      email: string,
+      password: string,
+      rememberMe: boolean = false
+    ): Promise<{ success: boolean; error?: string }> => {
+      try {
+        setState((prev) => ({ ...prev, loading: true }));
+
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, rememberMe }),
+        });
+
+        const data: LoginResponse = await response.json();
+
+        if (data.success && data.user && data.session) {
+          const user: UserDTO = {
+            id: data.user.id,
+            email: data.user.email,
+            isDemo: data.user.isDemo,
+            isEmailVerified: data.user.isEmailVerified,
+          };
+
+          // Save to cache
+          saveToCache(user, data.session.access_token);
+
+          setState({
+            user,
+            loading: false,
+            isAuthenticated: true,
+          });
+
+          return { success: true };
+        } else {
+          setState((prev) => ({ ...prev, loading: false }));
+          return { success: false, error: data.error || 'Logowanie nie powiodło się' };
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setState((prev) => ({ ...prev, loading: false }));
+        return { success: false, error: 'Wystąpił błąd połączenia' };
+      }
+    },
+    [saveToCache]
+  );
+
+  /**
+   * Register new user
+   */
+  const register = useCallback(
+    async (
+      email: string,
+      password: string
+    ): Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean }> => {
+      try {
+        setState((prev) => ({ ...prev, loading: true }));
+
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data: RegisterResponse = await response.json();
+
+        if (data.success && data.user) {
+          // If email verification is required, don't save to cache yet
+          if (data.requiresEmailVerification) {
+            setState((prev) => ({ ...prev, loading: false }));
+            return {
+              success: true,
+              requiresEmailVerification: true,
+            };
+          }
+
+          // User is auto-confirmed, can log in immediately
+          const user: UserDTO = {
+            id: data.user.id,
+            email: data.user.email,
+            isDemo: data.user.isDemo,
+            isEmailVerified: data.user.isEmailVerified,
+          };
+
+          setState({
+            user,
+            loading: false,
+            isAuthenticated: true,
+          });
+
+          return { success: true, requiresEmailVerification: false };
+        } else {
+          setState((prev) => ({ ...prev, loading: false }));
+          return { success: false, error: data.error || 'Rejestracja nie powiodła się' };
+        }
+      } catch (error) {
+        console.error('Register error:', error);
+        setState((prev) => ({ ...prev, loading: false }));
+        return { success: false, error: 'Wystąpił błąd połączenia' };
+      }
+    },
+    []
+  );
+
+  /**
+   * Create demo user account
+   */
+  const createDemoUser = useCallback(async (): Promise<{
+    success: boolean;
+    error?: string;
+    demoEmail?: string;
+  }> => {
+    try {
+      setState((prev) => ({ ...prev, loading: true }));
+
+      const response = await fetch('/api/auth/demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data: DemoResponse = await response.json();
+
+      if (data.success && data.user && data.session) {
+        const user: UserDTO = {
+          id: data.user.id,
+          email: data.user.email,
+          isDemo: true,
+          isEmailVerified: true,
+        };
+
+        // Save to cache
+        saveToCache(user, data.session.access_token);
+
+        setState({
+          user,
+          loading: false,
+          isAuthenticated: true,
+        });
+
+        return { success: true, demoEmail: data.demoEmail };
+      } else {
+        setState((prev) => ({ ...prev, loading: false }));
+        return { success: false, error: data.error || 'Nie udało się utworzyć konta demo' };
+      }
+    } catch (error) {
+      console.error('Demo user creation error:', error);
+      setState((prev) => ({ ...prev, loading: false }));
+      return { success: false, error: 'Wystąpił błąd połączenia' };
+    }
+  }, [saveToCache]);
+
+  /**
+   * Logout current user
+   */
+  const logout = useCallback(async () => {
+    try {
+      setState((prev) => ({ ...prev, loading: true }));
+
+      // Call logout API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      // Clear cache
+      clearCache();
+
+      // Update state
+      setState({
+        user: null,
+        loading: false,
+        isAuthenticated: false,
+      });
+
+      // Redirect to landing page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if API fails, clear local state
+      clearCache();
+      setState({
+        user: null,
+        loading: false,
+        isAuthenticated: false,
+      });
+      window.location.href = '/';
+    }
+  }, [clearCache]);
+
+  /**
+   * Initialize auth state on mount
+   */
+  useEffect(() => {
+    checkAuth();
+
+    // Subscribe to auth state changes (cross-tab sync, token refresh)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const user: UserDTO = {
+          id: session.user.id,
+          email: session.user.email!,
+          isDemo: session.user.user_metadata?.is_demo ?? false,
+          isEmailVerified: session.user.email_confirmed_at !== null,
+        };
+
+        saveToCache(user, session.access_token);
+
+        setState({
+          user,
+          loading: false,
+          isAuthenticated: true,
+        });
+      } else {
+        clearCache();
+
+        setState({
+          user: null,
+          loading: false,
+          isAuthenticated: false,
+        });
+      }
     });
-  };
 
-  const logout = () => {
-    setState({
-      user: null,
-      loading: false,
-      isAuthenticated: false
-    });
-  };
-
-  const register = async (email: string, password: string) => {
-    // Mock register implementation
-    setState(prev => ({ ...prev, loading: true }));
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: UserDTO = {
-      id: 'mock-user-id',
-      email,
-      isDemo: false,
-      isEmailVerified: false, // Would need email verification
-      accessToken: 'mock-jwt-token-for-development'
-    } as any;
-
-    setState({
-      user: mockUser,
-      loading: false,
-      isAuthenticated: true
-    });
-  };
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, checkAuth, saveToCache, clearCache]);
 
   return {
     ...state,
     login,
     logout,
-    register
+    register,
+    createDemoUser,
+    getAccessToken,
   };
 };

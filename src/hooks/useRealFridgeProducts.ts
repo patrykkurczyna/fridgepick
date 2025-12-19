@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ProductDTO } from '@/types/fridge';
 import type { UserProductsResponse } from '@/types';
+import { getAccessToken } from '@/hooks/useAuth';
 
 /**
  * Hook for fetching real products from API with proper authentication and search
@@ -18,9 +19,6 @@ export const useRealFridgeProducts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Get token from environment variable
-  const jwtToken = import.meta.env.PUBLIC_JWT_TOKEN;
-
   // Debounce search query (300ms delay)
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -34,6 +32,16 @@ export const useRealFridgeProducts = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // Get access token dynamically from localStorage (set by useAuth)
+        const jwtToken = getAccessToken();
+        if (!jwtToken) {
+          console.warn('No access token available, skipping fetch');
+          setProducts([]);
+          setLoading(false);
+          setIsSearching(false);
+          return;
+        }
+
         // Determine if this is a search or initial load
         const isSearchAction = !isInitialLoad && debouncedSearch !== '';
 
@@ -94,7 +102,7 @@ export const useRealFridgeProducts = () => {
     };
 
     fetchProducts();
-  }, [debouncedSearch, refreshTrigger, jwtToken]);
+  }, [debouncedSearch, refreshTrigger]);
 
   // Handlers for UI interactions - wrapped in useCallback to prevent re-renders
   const handleSearch = useCallback((query: string) => {

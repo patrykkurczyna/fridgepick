@@ -4,11 +4,11 @@ import { RegisterForm } from '../../components/auth/RegisterForm';
 
 const title = 'Rejestracja';
 
-// TODO: Po implementacji middleware - sprawdź czy użytkownik już zalogowany
-// const session = await Astro.locals.supabase.auth.getSession();
-// if (session.data.session) {
-//   return Astro.redirect('/fridge');
-// }
+// Check if user is already logged in
+if (Astro.locals.session) {
+  // User is already authenticated, redirect to fridge
+  return Astro.redirect('/fridge');
+}
 ---
 
 <AuthLayout title={title}>

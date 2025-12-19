@@ -1,7 +1,7 @@
-Twoim zadaniem jest implementacja elementów interfejsu użytkownika (stron i formularzy) dla procesu logowania, rejestracji i odzyskiwania konta. Specyfikacja znajduje się w: @.ai/auth-spec.md
+Przeprowadź integrację @src/pages/auth/login.astro @src/components/auth/LoginForm.tsx  z backendem Astro na podstawie specyfikacji @.ai/auth-spec.md. Rozpocznij od analizy istniejącego kodu w kontekście najlepszych praktyk @astro.mdc i @react.mdc
 
-Pamiętaj o założeniach z tego projektu - react i astro
+Przedstawiony plan powinien spełniać założenia wyszczególnione w sekcji user stories: @.ai/prd.md
 
-Wykorzystaj podobną stylistykę do @src/components/fridge/FridgeView.tsx
+Wykorzystaj @.ai/supabase-auth.mdc do uzyskania poprawnej integracji procesu logowania z Supabase Auth.
 
-Nie implementuj backendu ani modyfikacji stanu aplikacji - tymi elementami zajmiemy się w dalszej kolejności
+Zanim rozpoczniemy, zadaj mi 5 kluczowych pytań technicznych adresujących niejasne elementy integracji, które pomogą ci przeprowadzić całą implementację od początku do końca.

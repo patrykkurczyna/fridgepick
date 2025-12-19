@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 interface DemoModeIndicatorProps {
   /**
@@ -14,9 +15,11 @@ interface DemoModeIndicatorProps {
  * Informuje użytkownika o ograniczeniach demo i zachęca do rejestracji
  */
 export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail }) => {
-  // TODO: Po implementacji useAuth, sprawdzaj czy użytkownik jest w demo mode
-  // const { user } = useAuth();
-  // if (!user?.isDemo) return null;
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <div className="sticky top-0 z-50 bg-gradient-to-r from-yellow-100 to-yellow-50 border-b border-yellow-300 shadow-sm">
@@ -52,14 +55,12 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
             </Button>
 
             <Button
-              asChild
+              onClick={handleLogout}
               size="sm"
               variant="outline"
               className="border-yellow-400 text-yellow-900 hover:bg-yellow-100"
             >
-              <a href="/auth/login">
-                Zaloguj
-              </a>
+              Wyjdź
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { Logo } from '../Logo';
+import { UserMenu } from './UserMenu';
 
 interface FridgeHeaderProps {
   onAddProduct: () => void;
@@ -31,6 +32,9 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct }) => {
               Zarządzaj produktami w swojej lodówce i spiżarni
             </p>
           </div>
+
+          {/* User Menu */}
+          <UserMenu />
 
           {/* Desktop Add Button */}
           <button
