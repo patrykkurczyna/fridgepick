@@ -166,6 +166,7 @@ Użytkownicy mają trudności z efektywnym planowaniem posiłków na podstawie p
 - Predefiniowana "lodówka" z produktami
 - Przykładowy jadłospis tygodniowy
 - Możliwość przejścia do rejestracji z poziomu demo
+- Powinno dzialac bez logowania
 
 ### US-005: Dodawanie produktu do lodówki
 **Opis:** Jako użytkownik chcę dodać produkt do mojej lodówki, aby móc go uwzględnić w planowaniu posiłków.

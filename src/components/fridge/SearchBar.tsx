@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { validateSearchQuery } from '@/types/fridge';
 
@@ -10,98 +10,55 @@ interface SearchBarProps {
 }
 
 /**
- * Input do wyszukiwania produktów po nazwie z debounced search
- * Obsługuje: onChange z debounce, onClear, onSubmit (Enter key)
+ * Prosty controlled input do wyszukiwania produktów po nazwie
+ * Obsługuje: onChange (debounce w parent hook), onClear, Escape key
  */
-export const SearchBar: React.FC<SearchBarProps> = ({
+export const SearchBar: React.FC<SearchBarProps> = React.memo(({
   query,
   onSearch,
   placeholder = "Szukaj produktów...",
   disabled = false
 }) => {
-  const [localValue, setLocalValue] = useState(query);
-  const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync external query changes
-  useEffect(() => {
-    setLocalValue(query);
-  }, [query]);
+  console.log('[SearchBar] RENDER - query:', query);
 
   /**
-   * Handle input change with validation and debounce
+   * Handle input change - directly call onSearch without debounce
+   * (debounce is handled by parent hook)
    */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
-    // Update local state immediately for responsive UI
-    setLocalValue(value);
-
-    // Clear previous timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Validate input
     const { isValid, sanitized } = validateSearchQuery(value);
-    
-    // Set loading state for visual feedback
-    if (value.trim().length >= 2) {
-      setIsSearching(true);
-    }
 
-    // Debounced API call
-    timeoutRef.current = setTimeout(() => {
-      setIsSearching(false);
-      
-      if (isValid) {
-        onSearch(sanitized);
-      } else {
-        // If invalid, use sanitized version
-        setLocalValue(sanitized);
-        onSearch(sanitized);
-      }
-    }, 300);
+    // Call parent handler immediately - parent will debounce
+    onSearch(isValid ? sanitized : value);
   };
+
+  // Sync external query to input value when it changes externally (e.g., clear button)
+  React.useEffect(() => {
+    if (inputRef.current && document.activeElement !== inputRef.current) {
+      inputRef.current.value = query;
+    }
+  }, [query]);
 
   /**
    * Handle form submit (Enter key)
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Clear timeout and trigger immediate search
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    
-    const { isValid, sanitized } = validateSearchQuery(localValue);
-    setIsSearching(false);
-    
-    if (isValid) {
-      onSearch(sanitized);
-    } else {
-      setLocalValue(sanitized);
-      onSearch(sanitized);
-    }
+    // Form submission is handled by onChange, nothing extra needed
   };
 
   /**
    * Clear search query
    */
   const handleClear = () => {
-    setLocalValue('');
-    setIsSearching(false);
-    onSearch('');
-    
-    // Focus input after clear
-    inputRef.current?.focus();
-    
-    // Clear any pending timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (inputRef.current) {
+      inputRef.current.value = '';
     }
+    onSearch('');
+    inputRef.current?.focus();
   };
 
   /**
@@ -114,41 +71,27 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  const showClearButton = localValue.length > 0;
-  const showSearchingIndicator = isSearching && localValue.length >= 2;
+  const showClearButton = query.length > 0;
 
   return (
     <form onSubmit={handleSubmit} className="relative">
       <div className="relative">
         {/* Search Icon */}
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <MagnifyingGlassIcon 
-            className={`w-5 h-5 transition-colors ${
-              showSearchingIndicator ? 'text-blue-500' : 'text-gray-400'
-            }`} 
-          />
+          <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
         </div>
 
-        {/* Input Field */}
+        {/* Input Field - UNCONTROLLED to preserve focus */}
         <input
           ref={inputRef}
-          type="search"
-          value={localValue}
+          type="text"
+          defaultValue={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           className={`
-            block w-full pl-10 pr-10 py-3 
+            block w-full pl-10 pr-10 py-3
             border border-gray-300 rounded-lg
             bg-white text-gray-900 placeholder-gray-500
             focus:ring-2 focus:ring-blue-500 focus:border-blue-500
@@ -162,10 +105,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
         {/* Right side icons */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          {showSearchingIndicator && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-          )}
-          
           {showClearButton && !disabled && (
             <button
               type="button"
@@ -179,18 +118,25 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         </div>
       </div>
 
-      {/* Validation feedback */}
-      {localValue.length > 100 && (
-        <p className="mt-1 text-xs text-red-600">
-          Wyszukiwanie może zawierać maksymalnie 100 znaków
-        </p>
-      )}
-      
-      {localValue.length > 0 && localValue.length < 2 && (
-        <p className="mt-1 text-xs text-gray-500">
-          Wprowadź co najmniej 2 znaki aby wyszukać
-        </p>
-      )}
+      {/* Note: Validation feedback removed to keep component simple and preserve focus */}
     </form>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison - only re-render if query or onSearch changes
+  const shouldNotRerender =
+    prevProps.query === nextProps.query &&
+    prevProps.onSearch === nextProps.onSearch &&
+    prevProps.placeholder === nextProps.placeholder &&
+    prevProps.disabled === nextProps.disabled;
+
+  if (!shouldNotRerender) {
+    console.log('[SearchBar] Props changed:', {
+      query: prevProps.query !== nextProps.query ? `${prevProps.query} → ${nextProps.query}` : 'same',
+      onSearch: prevProps.onSearch !== nextProps.onSearch ? 'changed' : 'same',
+      placeholder: prevProps.placeholder !== nextProps.placeholder ? 'changed' : 'same',
+      disabled: prevProps.disabled !== nextProps.disabled ? `${prevProps.disabled} → ${nextProps.disabled}` : 'same'
+    });
+  }
+
+  return shouldNotRerender;
+});

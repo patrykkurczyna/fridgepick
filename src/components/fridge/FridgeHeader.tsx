@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { Logo } from '../Logo';
 
 interface FridgeHeaderProps {
   onAddProduct: () => void;
@@ -11,13 +12,22 @@ interface FridgeHeaderProps {
 export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct }) => {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-6">
+        <div className="flex items-center justify-between gap-4">
+          {/* Logo - clickable link to home */}
+          <a
+            href="/"
+            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+            aria-label="Powrót do strony głównej"
+          >
+            <Logo size="sm" variant="light" />
+          </a>
+
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-gray-900 md:text-2xl truncate">
               Moja Lodówka
             </h1>
-            <p className="mt-1 text-sm text-gray-500 md:text-base">
+            <p className="mt-0.5 text-xs text-gray-500 md:text-sm">
               Zarządzaj produktami w swojej lodówce i spiżarni
             </p>
           </div>

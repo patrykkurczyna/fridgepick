@@ -13,7 +13,7 @@ interface SortControlsProps {
  * Dropdown/select do wyboru opcji sortowania produktów
  * Obsługuje: onChange selection, reset to default (expires_at)
  */
-export const SortControls: React.FC<SortControlsProps> = ({
+export const SortControls: React.FC<SortControlsProps> = React.memo(({
   sortBy,
   onSortChange,
   disabled = false
@@ -99,4 +99,4 @@ export const SortControls: React.FC<SortControlsProps> = ({
       )}
     </div>
   );
-};
+});

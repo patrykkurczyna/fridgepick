@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ProductDTO } from '@/types/fridge';
 import type { UserProductsResponse } from '@/types';
 
@@ -8,8 +8,11 @@ import type { UserProductsResponse } from '@/types';
 export const useRealFridgeProducts = () => {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState(new Date());
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,9 +32,18 @@ export const useRealFridgeProducts = () => {
 
   // Fetch products when debounced search or refresh trigger changes
   useEffect(() => {
+    console.log('[Hook] useEffect triggered - debouncedSearch:', debouncedSearch, 'refreshTrigger:', refreshTrigger);
+
     const fetchProducts = async () => {
       try {
-        setLoading(true);
+        // Determine if this is a search or initial load
+        const isSearchAction = !isInitialLoad && debouncedSearch !== '';
+
+        if (isSearchAction) {
+          setIsSearching(true);
+        } else {
+          setLoading(true);
+        }
 
         // Build query parameters
         const params = new URLSearchParams();
@@ -69,71 +81,86 @@ export const useRealFridgeProducts = () => {
           updatedAt: product.createdAt
         }));
 
+        console.log('[Hook] Fetch complete - products count:', convertedProducts.length);
+
         setProducts(convertedProducts);
         setError(null);
         setLoading(false);
+        setIsSearching(false);
+        setIsInitialLoad(false);
+        setLastFetchTime(new Date());
 
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to load products');
         setLoading(false);
+        setIsSearching(false);
       }
     };
 
     fetchProducts();
   }, [debouncedSearch, refreshTrigger, jwtToken]);
 
-  // Handlers for UI interactions
-  const handleSearch = (query: string) => {
+  // Handlers for UI interactions - wrapped in useCallback to prevent re-renders
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-  };
+  }, []);
 
-  const handleSortChange = (sortBy: string) => {
+  const handleSortChange = useCallback((sortBy: string) => {
     // TODO: Implement sorting functionality
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     // TODO: Implement pagination functionality
-  };
+  }, []);
 
-  const retry = () => {
+  const retry = useCallback(() => {
     setLoading(true);
     setError(null);
+    setIsInitialLoad(true);
     // Re-trigger fetch by incrementing refreshTrigger
     setRefreshTrigger(prev => prev + 1);
-  };
+  }, []);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     retry();
-  };
+  }, [retry]);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchQuery('');
     setDebouncedSearch('');
-  };
+  }, []);
 
-  return {
+  // Memoize pagination object to prevent re-renders
+  const pagination = useMemo(() => ({
+    currentPage: 1,
+    totalPages: 1,
+    limit: 20,
+    total: products.length,
+    offset: 0
+  }), [products.length]);
+
+  // Memoize filters object to prevent re-renders
+  const filters = useMemo(() => ({
+    query: searchQuery,
+    sortBy: 'expires_at' as const,
+    sortDirection: 'asc' as const,
+    showExpired: false,
+    expiringSoon: undefined,
+    categoryId: undefined
+  }), [searchQuery]);
+
+  // Memoize return object to prevent re-renders
+  return useMemo(() => ({
     // State
     products,
     loading,
+    isSearching,
     error,
     searchQuery,
-    sortBy: 'expires_at',
+    sortBy: 'expires_at' as const,
     currentPage: 1,
-    pagination: {
-      currentPage: 1,
-      totalPages: 1,
-      limit: 20,
-      total: products.length,
-      offset: 0
-    },
-    filters: {
-      query: searchQuery,
-      sortBy: 'expires_at',
-      sortDirection: 'asc' as const,
-      showExpired: false,
-      expiringSoon: undefined,
-      categoryId: undefined
-    },
+    pagination,
+    filters,
     hasMore: false,
 
     // Actions
@@ -145,6 +172,21 @@ export const useRealFridgeProducts = () => {
     clearSearch,
 
     // Utility
-    lastFetch: new Date()
-  };
+    lastFetch: lastFetchTime
+  }), [
+    products,
+    loading,
+    isSearching,
+    error,
+    searchQuery,
+    pagination,
+    filters,
+    lastFetchTime,
+    handleSearch,
+    handleSortChange,
+    handlePageChange,
+    retry,
+    refresh,
+    clearSearch
+  ]);
 };

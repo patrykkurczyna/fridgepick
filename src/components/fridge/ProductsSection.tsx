@@ -6,6 +6,7 @@ import type { ProductDTO } from '@/types/fridge';
 interface ProductsSectionProps {
   products: ProductDTO[];
   loading: boolean;
+  isSearching?: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   searchQuery?: string;
@@ -18,6 +19,7 @@ interface ProductsSectionProps {
 export const ProductsSection: React.FC<ProductsSectionProps> = ({
   products,
   loading,
+  isSearching = false,
   onEdit,
   onDelete,
   searchQuery = ''
@@ -46,15 +48,18 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
     }
   };
 
+  // Only show loading skeleton on initial load, not during search
+  const showLoadingSkeleton = loading && !isSearching;
+
   return (
     <div className="products-section">
       {/* Results summary for search */}
-      {hasSearchQuery && !loading && (
+      {hasSearchQuery && !loading && !isSearching && (
         <div className="mb-4 text-sm text-gray-600">
           {hasProducts ? (
             <>
               Znaleziono <span className="font-medium">{products.length}</span> {
-                products.length === 1 ? 'produkt' : 
+                products.length === 1 ? 'produkt' :
                 products.length < 5 ? 'produkty' : 'produktów'
               } dla "{searchQuery}"
             </>
@@ -65,10 +70,11 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
       )}
 
       {/* Products list or empty state */}
-      {hasProducts || loading ? (
+      {hasProducts || showLoadingSkeleton ? (
         <ProductsList
           products={products}
-          loading={loading}
+          loading={showLoadingSkeleton}
+          isSearching={isSearching}
           onEdit={onEdit}
           onDelete={onDelete}
         />

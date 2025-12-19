@@ -16,7 +16,7 @@ interface FridgeFiltersProps {
  * Wrapper component dla wszystkich filtrów i kontrolek wyszukiwania
  * Łączy SearchBar i SortControls w responsywny layout
  */
-export const FridgeFilters: React.FC<FridgeFiltersProps> = ({
+export const FridgeFilters: React.FC<FridgeFiltersProps> = React.memo(({
   searchQuery,
   sortBy,
   onSearch,
@@ -34,7 +34,6 @@ export const FridgeFilters: React.FC<FridgeFiltersProps> = ({
           <SearchBar
             query={searchQuery}
             onSearch={onSearch}
-            disabled={loading}
             placeholder="Szukaj produktów po nazwie..."
           />
         </div>
@@ -75,4 +74,4 @@ export const FridgeFilters: React.FC<FridgeFiltersProps> = ({
       )}
     </div>
   );
-};
+});

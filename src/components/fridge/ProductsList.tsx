@@ -7,6 +7,7 @@ import type { ProductDTO } from '@/types/fridge';
 interface ProductsListProps {
   products: ProductDTO[];
   loading: boolean;
+  isSearching?: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -18,10 +19,11 @@ interface ProductsListProps {
 export const ProductsList: React.FC<ProductsListProps> = ({
   products,
   loading,
+  isSearching = false,
   onEdit,
   onDelete
 }) => {
-  // Loading state
+  // Loading state - only show skeleton on initial load, not during search
   if (loading) {
     return (
       <div className="products-grid grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -44,7 +46,13 @@ export const ProductsList: React.FC<ProductsListProps> = ({
   }
 
   return (
-    <div className="products-grid grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div
+      className={`
+        products-grid grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+        transition-opacity duration-200
+        ${isSearching ? 'opacity-60' : 'opacity-100'}
+      `}
+    >
       {products.map((product) => (
         <ProductCard
           key={product.id}

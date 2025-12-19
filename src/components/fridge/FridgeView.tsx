@@ -14,11 +14,14 @@ import type { QuickAddItem } from '@/types/fridge';
  * Zarządza stanem produktów, filtrowaniem i paginacją
  */
 export const FridgeView: React.FC = () => {
+  console.log('[FridgeView] RENDER');
+
   const { categories } = useProductCategories();
 
   const {
     products,
     loading,
+    isSearching,
     error,
     searchQuery,
     sortBy,
@@ -166,6 +169,7 @@ export const FridgeView: React.FC = () => {
           onSearch={handleSearch}
           onSortChange={handleSortChange}
           onClearSearch={clearSearch}
+          loading={isSearching}
         />
 
         {/* Quick add panel */}
@@ -180,6 +184,8 @@ export const FridgeView: React.FC = () => {
         <ProductsSection
           products={products}
           loading={loading}
+          isSearching={isSearching}
+          searchQuery={searchQuery}
           onEdit={handleEditProduct}
           onDelete={handleDeleteProduct}
         />
