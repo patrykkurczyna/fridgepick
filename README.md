@@ -83,6 +83,80 @@ npm run preview
 - `npm run lint:fix` - Automatically fix ESLint issues
 - `npm run format` - Format code with Prettier
 
+## Testing
+
+FridgePick implements a comprehensive testing strategy to ensure code quality, reliability, and maintainability across all features.
+
+### Testing Stack
+
+- **[Vitest](https://vitest.dev/)** - Lightning-fast unit testing framework with native ESM support
+- **[Playwright](https://playwright.dev/)** - End-to-end testing framework for automated browser testing
+- **[@testing-library/react](https://testing-library.com/react)** - Testing utilities for React components
+- **[@testing-library/user-event](https://testing-library.com/docs/user-event/intro)** - User interaction simulation
+
+### Test Types
+
+#### Unit Tests
+- Service layer testing (ProductCategoryService, UserProductService)
+- Repository testing with database mocking
+- Custom React hooks validation
+- Utility functions and validation logic
+- Component isolation testing
+
+#### Integration Tests
+- Supabase integration verification
+- API endpoint testing
+- Middleware chain validation
+- End-to-end data flow testing
+
+#### E2E Tests (Playwright)
+- Complete user authentication flows
+- Product management workflows
+- Search, filtering, and pagination
+- Form validation and error handling
+- Responsive UI testing (Chromium/Desktop Chrome)
+
+### Running Tests
+
+```bash
+# Run all unit and integration tests
+npm run test
+
+# Run tests in watch mode during development
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run E2E tests with Playwright
+npm run test:e2e
+
+# Run E2E tests in UI mode (visual debugging)
+npm run test:e2e:ui
+
+# Generate Playwright code for new tests
+npm run test:e2e:codegen
+```
+
+### Testing Strategy
+
+Our testing approach follows these principles:
+
+1. **Test Pyramid**: Focus on unit tests (fast, numerous) → integration tests (moderate) → E2E tests (slow, critical paths)
+2. **Code Coverage**: Maintain >80% coverage for business logic, >70% for UI components
+3. **Test Isolation**: Each test runs independently with clean state
+4. **Page Object Model**: E2E tests use POM pattern for maintainability
+5. **CI/CD Integration**: All tests run automatically on pull requests
+
+### Test Coverage Goals
+
+- **Business Logic (Services/Repositories)**: ≥80% line coverage
+- **UI Components**: ≥70% line coverage
+- **API Endpoints**: 100% critical path coverage
+- **Authentication Flows**: 100% coverage
+
+For detailed testing documentation, see [Test Plan](.ai/test-plan.mdc).
+
 ## Project Scope
 
 ### MVP Features (In Scope)
