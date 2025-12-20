@@ -166,7 +166,7 @@ export function validateCreateUserProduct(data: unknown): ValidationResult<z.inf
       success: true,
       data: validatedData,
     };
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: ValidationError[] = error.errors.map((err) => ({
         field: err.path.join("."),
@@ -227,7 +227,7 @@ export function validateUserProductsQuery(
       success: true,
       data: validatedData,
     };
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: ValidationError[] = error.errors.map((err) => ({
         field: err.path.join("."),
@@ -268,7 +268,7 @@ export function validateProductId(
       success: true,
       data: validatedData,
     };
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: ValidationError[] = error.errors.map((err) => ({
         field: err.path.join("."),

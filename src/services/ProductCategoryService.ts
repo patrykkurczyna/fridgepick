@@ -84,7 +84,7 @@ export class ProductCategoryService implements IProductCategoryService {
       });
 
       return categories;
-    } catch {
+    } catch (error) {
       console.error("ProductCategoryService: Database error, falling back to static data", {
         error: error instanceof Error ? error.message : String(error),
         errorType: error instanceof DatabaseError ? "DatabaseError" : "UnknownError",
