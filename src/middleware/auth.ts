@@ -1,11 +1,6 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../types';
-import { 
-  createErrorResponse, 
-  ApiError, 
-  HttpStatus, 
-  ErrorCode 
-} from './errorHandler';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../types";
+import { HttpStatus } from "./errorHandler";
 
 /**
  * Authenticated user context
@@ -27,23 +22,6 @@ export interface AuthenticationResult {
 }
 
 /**
- * JWT payload structure from Supabase
- */
-interface JWTPayload {
-  sub: string;
-  email?: string;
-  user_metadata?: {
-    is_demo?: boolean;
-    email_verified?: boolean;
-  };
-  email_confirmed_at?: string;
-  aud: string;
-  exp: number;
-  iat: number;
-  iss: string;
-}
-
-/**
  * Authentication service for JWT validation and user extraction
  */
 export class AuthService {
@@ -51,7 +29,7 @@ export class AuthService {
 
   /**
    * Extracts and validates JWT token from Authorization header
-   * 
+   *
    * @param authHeader - Authorization header value
    * @returns Promise<AuthenticationResult> Authentication result with user data or error
    */
@@ -60,7 +38,7 @@ export class AuthService {
       if (!authHeader) {
         return {
           success: false,
-          error: 'Authorization header is required'
+          error: "Authorization header is required",
         };
       }
 
@@ -69,7 +47,7 @@ export class AuthService {
       if (!tokenMatch) {
         return {
           success: false,
-          error: 'Authorization header must be in format: Bearer <token>'
+          error: "Authorization header must be in format: Bearer <token>",
         };
       }
 
@@ -79,14 +57,14 @@ export class AuthService {
       const { data: userData, error: authError } = await this.supabase.auth.getUser(token);
 
       if (authError || !userData.user) {
-        console.warn('AuthService: Token validation failed', {
+        console.warn("AuthService: Token validation failed", {
           error: authError?.message,
-          hasUser: !!userData.user
+          hasUser: !!userData.user,
         });
 
         return {
           success: false,
-          error: 'Invalid or expired authentication token'
+          error: "Invalid or expired authentication token",
         };
       }
 
@@ -95,44 +73,43 @@ export class AuthService {
       // Extract user information
       const authenticatedUser: AuthenticatedUser = {
         id: user.id,
-        email: user.email || '',
+        email: user.email || "",
         isDemo: user.user_metadata?.is_demo || false,
-        isEmailVerified: !!user.email_confirmed_at
+        isEmailVerified: !!user.email_confirmed_at,
       };
 
-      console.debug('AuthService: Token validated successfully', {
-        userId: user.id.substring(0, 8) + '...',
+      console.debug("AuthService: Token validated successfully", {
+        userId: user.id.substring(0, 8) + "...",
         email: user.email,
         isDemo: authenticatedUser.isDemo,
-        isEmailVerified: authenticatedUser.isEmailVerified
+        isEmailVerified: authenticatedUser.isEmailVerified,
       });
 
       return {
         success: true,
-        user: authenticatedUser
+        user: authenticatedUser,
       };
-
-    } catch (error) {
-      console.error('AuthService: Unexpected error during token validation', {
+    } catch {
+      console.error("AuthService: Unexpected error during token validation", {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
 
       return {
         success: false,
-        error: 'Authentication service error'
+        error: "Authentication service error",
       };
     }
   }
 
   /**
    * Validates that user has verified email (if required)
-   * 
+   *
    * @param user - Authenticated user
    * @param requireVerified - Whether email verification is required
    * @returns boolean True if verification requirement is met
    */
-  validateEmailVerification(user: AuthenticatedUser, requireVerified: boolean = true): boolean {
+  validateEmailVerification(user: AuthenticatedUser, requireVerified = true): boolean {
     if (!requireVerified) {
       return true;
     }
@@ -147,7 +124,7 @@ export class AuthService {
 
   /**
    * Checks if user has demo limitations
-   * 
+   *
    * @param user - Authenticated user
    * @returns boolean True if user is demo user with limitations
    */
@@ -166,20 +143,14 @@ export interface AuthMiddlewareOptions {
 
 /**
  * Creates authentication middleware for API routes
- * 
+ *
  * @param supabase - Supabase client instance
  * @param options - Authentication options
  * @returns Authentication middleware function
  */
-export function createAuthMiddleware(
-  supabase: SupabaseClient<Database>,
-  options: AuthMiddlewareOptions = {}
-) {
+export function createAuthMiddleware(supabase: SupabaseClient<Database>, options: AuthMiddlewareOptions = {}) {
   const authService = new AuthService(supabase);
-  const {
-    requireEmailVerification = true,
-    allowDemoUsers = true
-  } = options;
+  const { requireEmailVerification = true, allowDemoUsers = true } = options;
 
   return async function requireAuth(request: Request): Promise<{
     success: boolean;
@@ -188,25 +159,25 @@ export function createAuthMiddleware(
   }> {
     try {
       const requestId = crypto.randomUUID();
-      
-      console.info('AuthMiddleware: Processing authentication', {
+
+      console.info("AuthMiddleware: Processing authentication", {
         requestId,
         url: request.url,
         method: request.method,
-        userAgent: request.headers.get('user-agent')?.substring(0, 50)
+        userAgent: request.headers.get("user-agent")?.substring(0, 50),
       });
 
       // Extract authorization header
-      const authHeader = request.headers.get('authorization');
-      
+      const authHeader = request.headers.get("authorization");
+
       // Validate token
       const authResult = await authService.validateBearerToken(authHeader);
 
       if (!authResult.success || !authResult.user) {
-        console.warn('AuthMiddleware: Authentication failed', {
+        console.warn("AuthMiddleware: Authentication failed", {
           requestId,
           error: authResult.error,
-          hasAuthHeader: !!authHeader
+          hasAuthHeader: !!authHeader,
         });
 
         return {
@@ -215,10 +186,10 @@ export function createAuthMiddleware(
             new ApiError(
               HttpStatus.UNAUTHORIZED,
               ErrorCode.UNAUTHORIZED,
-              authResult.error || 'Authentication required'
+              authResult.error || "Authentication required"
             ),
             requestId
-          )
+          ),
         };
       }
 
@@ -226,9 +197,9 @@ export function createAuthMiddleware(
 
       // Check demo user restrictions
       if (!allowDemoUsers && user.isDemo) {
-        console.warn('AuthMiddleware: Demo user access denied', {
+        console.warn("AuthMiddleware: Demo user access denied", {
           requestId,
-          userId: user.id.substring(0, 8) + '...'
+          userId: user.id.substring(0, 8) + "...",
         });
 
         return {
@@ -237,19 +208,19 @@ export function createAuthMiddleware(
             new ApiError(
               HttpStatus.FORBIDDEN,
               ErrorCode.FORBIDDEN,
-              'Demo users are not allowed to access this resource'
+              "Demo users are not allowed to access this resource"
             ),
             requestId
-          )
+          ),
         };
       }
 
       // Check email verification
       if (!authService.validateEmailVerification(user, requireEmailVerification)) {
-        console.warn('AuthMiddleware: Email verification required', {
+        console.warn("AuthMiddleware: Email verification required", {
           requestId,
-          userId: user.id.substring(0, 8) + '...',
-          isEmailVerified: user.isEmailVerified
+          userId: user.id.substring(0, 8) + "...",
+          isEmailVerified: user.isEmailVerified,
         });
 
         return {
@@ -258,33 +229,32 @@ export function createAuthMiddleware(
             new ApiError(
               HttpStatus.FORBIDDEN,
               ErrorCode.FORBIDDEN,
-              'Email verification required to access this resource',
+              "Email verification required to access this resource",
               { requiresEmailVerification: true }
             ),
             requestId
-          )
+          ),
         };
       }
 
-      console.debug('AuthMiddleware: Authentication successful', {
+      console.debug("AuthMiddleware: Authentication successful", {
         requestId,
-        userId: user.id.substring(0, 8) + '...',
+        userId: user.id.substring(0, 8) + "...",
         email: user.email,
-        isDemo: user.isDemo
+        isDemo: user.isDemo,
       });
 
       return {
         success: true,
-        user
+        user,
       };
-
-    } catch (error) {
+    } catch {
       const requestId = crypto.randomUUID();
-      
-      console.error('AuthMiddleware: Unexpected error', {
+
+      console.error("AuthMiddleware: Unexpected error", {
         requestId,
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
 
       return {
@@ -293,10 +263,10 @@ export function createAuthMiddleware(
           new ApiError(
             HttpStatus.INTERNAL_SERVER_ERROR,
             ErrorCode.INTERNAL_SERVER_ERROR,
-            'Authentication service error'
+            "Authentication service error"
           ),
           requestId
-        )
+        ),
       };
     }
   };
@@ -304,13 +274,13 @@ export function createAuthMiddleware(
 
 /**
  * Simple authentication helper for quick integration
- * 
+ *
  * @param request - Request object
  * @param supabase - Supabase client
  * @returns Promise<AuthenticatedUser> Authenticated user or throws ApiError
  */
 export async function requireAuthentication(
-  request: Request, 
+  request: Request,
   supabase: SupabaseClient<Database>
 ): Promise<AuthenticatedUser> {
   const authMiddleware = createAuthMiddleware(supabase);
@@ -319,18 +289,10 @@ export async function requireAuthentication(
   if (!result.success || !result.user) {
     if (result.response) {
       // Extract error information from response
-      throw new ApiError(
-        result.response.status as HttpStatus,
-        ErrorCode.UNAUTHORIZED,
-        'Authentication failed'
-      );
+      throw new ApiError(result.response.status as HttpStatus, ErrorCode.UNAUTHORIZED, "Authentication failed");
     }
-    
-    throw new ApiError(
-      HttpStatus.UNAUTHORIZED,
-      ErrorCode.UNAUTHORIZED,
-      'Authentication required'
-    );
+
+    throw new ApiError(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Authentication required");
   }
 
   return result.user;
@@ -345,25 +307,17 @@ export async function requireDemoFriendlyAuth(
 ): Promise<AuthenticatedUser> {
   const authMiddleware = createAuthMiddleware(supabase, {
     requireEmailVerification: false,
-    allowDemoUsers: true
+    allowDemoUsers: true,
   });
-  
+
   const result = await authMiddleware(request);
 
   if (!result.success || !result.user) {
     if (result.response) {
-      throw new ApiError(
-        result.response.status as HttpStatus,
-        ErrorCode.UNAUTHORIZED,
-        'Authentication failed'
-      );
+      throw new ApiError(result.response.status as HttpStatus, ErrorCode.UNAUTHORIZED, "Authentication failed");
     }
-    
-    throw new ApiError(
-      HttpStatus.UNAUTHORIZED,
-      ErrorCode.UNAUTHORIZED,
-      'Authentication required'
-    );
+
+    throw new ApiError(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Authentication required");
   }
 
   return result.user;
@@ -378,25 +332,17 @@ export async function requireVerifiedAuth(
 ): Promise<AuthenticatedUser> {
   const authMiddleware = createAuthMiddleware(supabase, {
     requireEmailVerification: true,
-    allowDemoUsers: false
+    allowDemoUsers: false,
   });
-  
+
   const result = await authMiddleware(request);
 
   if (!result.success || !result.user) {
     if (result.response) {
-      throw new ApiError(
-        result.response.status as HttpStatus,
-        ErrorCode.UNAUTHORIZED,
-        'Authentication failed'
-      );
+      throw new ApiError(result.response.status as HttpStatus, ErrorCode.UNAUTHORIZED, "Authentication failed");
     }
-    
-    throw new ApiError(
-      HttpStatus.UNAUTHORIZED,
-      ErrorCode.UNAUTHORIZED,
-      'Verified authentication required'
-    );
+
+    throw new ApiError(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Verified authentication required");
   }
 
   return result.user;
@@ -425,7 +371,11 @@ class UserRateLimitStore {
     this.cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
   }
 
-  checkRateLimit(userId: string, maxRequests: number, windowMs: number): {
+  checkRateLimit(
+    userId: string,
+    maxRequests: number,
+    windowMs: number
+  ): {
     allowed: boolean;
     remaining: number;
     resetTime: number;
@@ -433,22 +383,22 @@ class UserRateLimitStore {
     const now = Date.now();
     const current = this.store.get(userId);
 
-    if (!current || (now - current.windowStart) >= windowMs) {
+    if (!current || now - current.windowStart >= windowMs) {
       // New window or user
       const rateLimit: UserRateLimit = {
         userId,
         requestCount: 1,
         windowStart: now,
         windowDurationMs: windowMs,
-        maxRequests
+        maxRequests,
       };
-      
+
       this.store.set(userId, rateLimit);
-      
+
       return {
         allowed: true,
         remaining: maxRequests - 1,
-        resetTime: now + windowMs
+        resetTime: now + windowMs,
       };
     }
 
@@ -462,14 +412,14 @@ class UserRateLimitStore {
     return {
       allowed: current.requestCount <= maxRequests,
       remaining,
-      resetTime
+      resetTime,
     };
   }
 
   private cleanup(): void {
     const now = Date.now();
     for (const [userId, rateLimit] of this.store.entries()) {
-      if ((now - rateLimit.windowStart) >= rateLimit.windowDurationMs) {
+      if (now - rateLimit.windowStart >= rateLimit.windowDurationMs) {
         this.store.delete(userId);
       }
     }
@@ -486,7 +436,7 @@ const userRateLimiter = new UserRateLimitStore();
 
 /**
  * Check rate limiting for authenticated users
- * 
+ *
  * @param user - Authenticated user
  * @param maxRequests - Maximum requests per window (default: 100)
  * @param windowMs - Window duration in milliseconds (default: 1 minute)
@@ -494,7 +444,7 @@ const userRateLimiter = new UserRateLimitStore();
  */
 export function checkUserRateLimit(
   user: AuthenticatedUser,
-  maxRequests: number = 100,
+  maxRequests = 100,
   windowMs: number = 60 * 1000
 ): {
   allowed: boolean;
@@ -502,18 +452,18 @@ export function checkUserRateLimit(
 } {
   // Demo users might have different limits
   const adjustedMaxRequests = user.isDemo ? Math.min(maxRequests, 50) : maxRequests;
-  
+
   const result = userRateLimiter.checkRateLimit(user.id, adjustedMaxRequests, windowMs);
-  
+
   const resetTime = Math.ceil(result.resetTime / 1000);
-  
+
   return {
     allowed: result.allowed,
     headers: {
-      'X-RateLimit-Limit-User': adjustedMaxRequests.toString(),
-      'X-RateLimit-Remaining-User': result.remaining.toString(),
-      'X-RateLimit-Reset-User': resetTime.toString(),
-      'X-User-Type': user.isDemo ? 'demo' : 'verified'
-    }
+      "X-RateLimit-Limit-User": adjustedMaxRequests.toString(),
+      "X-RateLimit-Remaining-User": result.remaining.toString(),
+      "X-RateLimit-Reset-User": resetTime.toString(),
+      "X-User-Type": user.isDemo ? "demo" : "verified",
+    },
   };
 }

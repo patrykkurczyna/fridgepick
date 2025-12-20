@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 /**
  * POST /api/auth/forgot-password
@@ -20,15 +20,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const { email } = body;
 
     // Validate input
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== "string") {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Email jest wymagany',
+          error: "Email jest wymagany",
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -39,11 +39,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Nieprawidłowy format email',
+          error: "Nieprawidłowy format email",
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -54,7 +54,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (error) {
-      console.error('Forgot password error:', error);
+      console.error("Forgot password error:", error);
       // Don't reveal if email exists for security reasons
       // Return success even if email doesn't exist
     }
@@ -63,23 +63,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Jeśli konto o tym adresie email istnieje, otrzymasz wiadomość z instrukcjami resetowania hasła.',
+        message: "Jeśli konto o tym adresie email istnieje, otrzymasz wiadomość z instrukcjami resetowania hasła.",
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
-  } catch (error) {
-    console.error('Forgot password API error:', error);
+  } catch {
+    console.error("Forgot password API error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Wystąpił błąd serwera. Spróbuj ponownie później.',
+        error: "Wystąpił błąd serwera. Spróbuj ponownie później.",
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

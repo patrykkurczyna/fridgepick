@@ -1,8 +1,8 @@
-import type { ProductCategoryDTO, CreateUserProductRequest, UpdateUserProductRequest, UserProductDTO, DatabaseEnums } from './index';
+import type { ProductCategoryDTO, DatabaseEnums } from "./index";
 
 // ViewModel dla całego widoku formularza
 export interface ProductFormViewModel {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   productId?: string;
   formData: ProductFormData;
   validationErrors: ValidationErrors;
@@ -16,7 +16,7 @@ export interface ProductFormData {
   name: string;
   categoryId: number | null;
   quantity: number | null;
-  unit: DatabaseEnums['unit_type'] | null;
+  unit: DatabaseEnums["unit_type"] | null;
   expiresAt: string | null; // ISO date string format
 }
 
@@ -32,10 +32,10 @@ export interface ValidationErrors {
 
 // Stan loading dla różnych operacji
 export interface LoadingState {
-  form: boolean;        // Ładowanie danych w trybie edycji
-  submit: boolean;      // Zapisywanie formularza
-  delete: boolean;      // Usuwanie produktu
-  categories: boolean;  // Ładowanie kategorii
+  form: boolean; // Ładowanie danych w trybie edycji
+  submit: boolean; // Zapisywanie formularza
+  delete: boolean; // Usuwanie produktu
+  categories: boolean; // Ładowanie kategorii
 }
 
 // Typ dla validation result
@@ -49,12 +49,12 @@ export interface ProductFormProps {
   formData: ProductFormData;
   errors: ValidationErrors;
   categories: ProductCategoryDTO[];
-  onFieldChange: (field: keyof ProductFormData, value: any) => void;
+  onFieldChange: (field: keyof ProductFormData, value: unknown) => void;
   onFieldBlur: (field: keyof ProductFormData) => void;
   onSubmit: (data: ProductFormData) => void;
   loading: boolean;
   // Form actions props
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   onCancel: () => void;
   onDelete?: () => void;
   saveLoading: boolean;
@@ -77,8 +77,8 @@ export interface CategoryDropdownProps {
 }
 
 export interface UnitSelectorProps {
-  value: DatabaseEnums['unit_type'] | null;
-  onChange: (unit: DatabaseEnums['unit_type']) => void;
+  value: DatabaseEnums["unit_type"] | null;
+  onChange: (unit: DatabaseEnums["unit_type"]) => void;
   error?: string;
 }
 
@@ -90,7 +90,7 @@ export interface DatePickerProps {
 }
 
 export interface FormActionsProps {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   onCancel: () => void;
   onDelete?: () => void;
   saveLoading: boolean;

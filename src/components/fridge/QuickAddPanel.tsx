@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from '@heroicons/react/24/outline';
-import type { QuickAddItem, ProductCategory } from '@/types/fridge';
-import { QUICK_ADD_PRODUCTS, getPopularQuickAddProducts } from '@/data/quickAddProducts';
-import { QuickAddModal } from './QuickAddModal';
+import React, { useState } from "react";
+import { ChevronDownIcon, ChevronUpIcon, PlusIcon } from "@heroicons/react/24/outline";
+import type { QuickAddItem, ProductCategory } from "@/types/fridge";
+import { QUICK_ADD_PRODUCTS, getPopularQuickAddProducts } from "@/data/quickAddProducts";
+import { QuickAddModal } from "./QuickAddModal";
 
 interface QuickAddPanelProps {
   isExpanded: boolean;
@@ -15,12 +15,7 @@ interface QuickAddPanelProps {
  * Collapsible panel z predefiniowanymi popularnymi produktami do szybkiego dodania
  * Obsługuje: expand/collapse, click na item → modal z podstawowymi danymi
  */
-export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({
-  isExpanded,
-  onToggle,
-  onQuickAdd,
-  categories
-}) => {
+export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({ isExpanded, onToggle, onQuickAdd, categories }) => {
   const [selectedItem, setSelectedItem] = useState<QuickAddItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,20 +37,19 @@ export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({
   const handleQuickAddSubmit = async (item: QuickAddItem, customData?: Partial<QuickAddItem>) => {
     try {
       setIsLoading(true);
-      
+
       // Merge custom data with item defaults
       const finalItem = {
         ...item,
-        ...customData
+        ...customData,
       };
-      
+
       await onQuickAdd(finalItem);
-      
+
       // Close modal on success
       setIsModalOpen(false);
       setSelectedItem(null);
-      
-    } catch (error) {
+    } catch {
       // Error handling will be done by the modal
     } finally {
       setIsLoading(false);
@@ -83,11 +77,9 @@ export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({
           <div className="flex items-center gap-2">
             <PlusIcon className="w-5 h-5 text-blue-600" />
             <span className="font-medium text-gray-900">Szybkie dodawanie</span>
-            <span className="text-sm text-gray-500">
-              ({displayProducts.length} produktów)
-            </span>
+            <span className="text-sm text-gray-500">({displayProducts.length} produktów)</span>
           </div>
-          
+
           {isExpanded ? (
             <ChevronUpIcon className="w-5 h-5 text-gray-400" />
           ) : (
@@ -96,14 +88,14 @@ export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({
         </button>
 
         {/* Collapsible content */}
-        <div className={`overflow-hidden transition-all duration-300 ${
-          isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        }`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
           <div className="px-4 pb-4">
-            <p className="text-sm text-gray-600 mb-4">
-              Kliknij na produkt aby szybko dodać go do lodówki
-            </p>
-            
+            <p className="text-sm text-gray-600 mb-4">Kliknij na produkt aby szybko dodać go do lodówki</p>
+
             {/* Products grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               {displayProducts.map((item, index) => (
@@ -112,12 +104,8 @@ export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({
                   onClick={() => handleItemClick(item)}
                   className="flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group cursor-pointer"
                 >
-                  <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
-                    {item.icon || '📦'}
-                  </div>
-                  <span className="text-xs text-gray-700 text-center leading-tight">
-                    {item.name}
-                  </span>
+                  <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">{item.icon || "📦"}</div>
+                  <span className="text-xs text-gray-700 text-center leading-tight">{item.name}</span>
                   <span className="text-xs text-gray-500 mt-1">
                     {item.defaultQuantity} {item.defaultUnit}
                   </span>
@@ -128,9 +116,7 @@ export const QuickAddPanel: React.FC<QuickAddPanelProps> = ({
             {/* Show more products hint */}
             {QUICK_ADD_PRODUCTS.length > displayProducts.length && (
               <div className="mt-4 text-center">
-                <p className="text-xs text-gray-500">
-                  Dostępne {QUICK_ADD_PRODUCTS.length} popularnych produktów
-                </p>
+                <p className="text-xs text-gray-500">Dostępne {QUICK_ADD_PRODUCTS.length} popularnych produktów</p>
               </div>
             )}
           </div>

@@ -1,21 +1,18 @@
-import React from 'react';
+import React from "react";
 
 interface LoadingSkeletonProps {
   count?: number;
-  variant?: 'card' | 'list';
+  variant?: "card" | "list";
 }
 
 /**
  * Placeholder skeleton podczas ładowania listy produktów
  * Shimmer effect w layout podobnym do ProductCard
  */
-export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ 
-  count = 6, 
-  variant = 'card' 
-}) => {
+export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ count = 6, variant = "card" }) => {
   const items = Array.from({ length: count }, (_, index) => index);
 
-  if (variant === 'list') {
+  if (variant === "list") {
     return (
       <div className="space-y-4">
         {items.map((index) => (
@@ -56,7 +53,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
                 {/* Kategoria */}
                 <div className="h-3 bg-gray-200 rounded w-1/2"></div>
               </div>
-              
+
               {/* Action buttons placeholder */}
               <div className="flex items-center gap-1 ml-2">
                 <div className="w-6 h-6 bg-gray-200 rounded"></div>

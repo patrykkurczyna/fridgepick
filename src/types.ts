@@ -1,8 +1,8 @@
-import type { Database } from './db/database.types';
+import type { Database } from "./db/database.types";
 
 // Database table type shortcuts for easier access
-type Tables = Database['public']['Tables'];
-type Enums = Database['public']['Enums'];
+type Tables = Database["public"]["Tables"];
+type Enums = Database["public"]["Enums"];
 
 // DatabaseEnums is exported at the bottom of the file
 
@@ -65,10 +65,7 @@ export interface ApiSuccessResponse {
 // =============================================================================
 
 /** Product category DTO - directly mapped from database */
-export type ProductCategoryDTO = Pick<
-  Tables['product_categories']['Row'],
-  'id' | 'name' | 'description'
->;
+export type ProductCategoryDTO = Pick<Tables["product_categories"]["Row"], "id" | "name" | "description">;
 
 /** Response DTO for product categories list */
 export interface ProductCategoriesResponse {
@@ -86,7 +83,7 @@ export interface UserProductDTO {
   categoryId: number;
   categoryName: string;
   quantity: number;
-  unit: Enums['unit_type'];
+  unit: Enums["unit_type"];
   expiresAt: string | null;
   createdAt: string;
   isExpired: boolean;
@@ -98,7 +95,7 @@ export interface CreateUserProductRequest {
   name: string;
   categoryId: number;
   quantity: number;
-  unit: Enums['unit_type'];
+  unit: Enums["unit_type"];
   expiresAt?: string;
 }
 
@@ -107,7 +104,7 @@ export interface UpdateUserProductRequest {
   name: string;
   categoryId: number;
   quantity: number;
-  unit: Enums['unit_type'];
+  unit: Enums["unit_type"];
   expiresAt?: string;
 }
 
@@ -142,8 +139,8 @@ export interface RecipeDTO {
   id: string;
   name: string;
   description: string | null;
-  mealCategory: Enums['meal_category'];
-  proteinType: Enums['protein_type'];
+  mealCategory: Enums["meal_category"];
+  proteinType: Enums["protein_type"];
   prepTimeMinutes: number;
   servings: number;
   nutritionalValues: NutritionalValuesDTO | null;
@@ -156,7 +153,7 @@ export interface RecipeIngredientDTO {
   id: string;
   name: string;
   quantity: number;
-  unit: Enums['unit_type'];
+  unit: Enums["unit_type"];
   isRequired: boolean;
   userHasIngredient: boolean;
   userQuantity: number;
@@ -186,11 +183,11 @@ export interface RecipeDetailResponse {
 // =============================================================================
 
 /** Match level for AI recipe recommendations */
-export type RecipeMatchLevel = 'idealny' | 'prawie idealny' | 'wymaga dokupienia';
+export type RecipeMatchLevel = "idealny" | "prawie idealny" | "wymaga dokupienia";
 
 /** AI recipe recommendation DTO */
 export interface AIRecipeRecommendationDTO {
-  recipe: Pick<RecipeDTO, 'id' | 'name' | 'mealCategory' | 'prepTimeMinutes' | 'nutritionalValues'>;
+  recipe: Pick<RecipeDTO, "id" | "name" | "mealCategory" | "prepTimeMinutes" | "nutritionalValues">;
   matchScore: number;
   matchLevel: RecipeMatchLevel;
   availableIngredients: number;
@@ -220,7 +217,7 @@ export interface UserPreferencesDTO {
   eggDinnersPerWeek: number | null;
   sweetBreakfastRatio: number | null;
   dailyCalories: number | null;
-  additionalPreferences: Record<string, any> | null;
+  additionalPreferences: Record<string, unknown> | null;
 }
 
 /** Command Model for updating user preferences */
@@ -266,7 +263,7 @@ export interface WeeklyMealPlanDTO {
 export interface MealPlanItemDTO {
   id: string;
   mealDate: string;
-  mealType: Enums['meal_type'];
+  mealType: Enums["meal_type"];
   portions: number;
   recipe: {
     id: string;
@@ -282,7 +279,7 @@ export interface MealPlanItemDTO {
 export interface ShoppingListItemDTO {
   ingredient: string;
   totalQuantity: number;
-  unit: Enums['unit_type'];
+  unit: Enums["unit_type"];
   userHas: number;
   needToBuy: number;
 }
@@ -339,7 +336,7 @@ export interface UpdateMealPlanItemResponse {
   mealItem: {
     id: string;
     mealDate: string;
-    mealType: Enums['meal_type'];
+    mealType: Enums["meal_type"];
     portions: number;
     recipe: {
       id: string;
@@ -379,7 +376,7 @@ export interface InventoryUpdateDTO {
   oldQuantity: number;
   newQuantity: number;
   deducted: number;
-  unit: Enums['unit_type'];
+  unit: Enums["unit_type"];
 }
 
 /** Response DTO for cooked meals list */
@@ -418,7 +415,7 @@ export interface ApiErrorResponse {
   error: boolean;
   message: string;
   code?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 /** Query parameters for list endpoints */
@@ -439,15 +436,15 @@ export interface UserProductsQueryParams extends ListQueryParams {
 /** Query parameters for recipes */
 export interface RecipesQueryParams extends ListQueryParams {
   search?: string;
-  meal_category?: Enums['meal_category'];
-  protein_type?: Enums['protein_type'];
+  meal_category?: Enums["meal_category"];
+  protein_type?: Enums["protein_type"];
   max_prep_time?: number;
   available_ingredients?: boolean;
 }
 
 /** Query parameters for AI recipe recommendations */
 export interface AIRecipeRecommendationsQueryParams {
-  meal_category?: Enums['meal_category'];
+  meal_category?: Enums["meal_category"];
   max_missing_ingredients?: number;
   prioritize_expiring?: boolean;
   limit?: number;
@@ -471,28 +468,19 @@ export interface CookedMealsQueryParams extends ListQueryParams {
 // =============================================================================
 
 /** Re-export database enums for convenience */
-export type {
-  Enums as DatabaseEnums,
-  Tables as DatabaseTables
-};
+export type { Enums as DatabaseEnums, Tables as DatabaseTables };
 
 /** Match level union type for AI recommendations */
-export const RECIPE_MATCH_LEVELS = ['idealny', 'prawie idealny', 'wymaga dokupienia'] as const;
+export const RECIPE_MATCH_LEVELS = ["idealny", "prawie idealny", "wymaga dokupienia"] as const;
 
 /** Unit type constants for validation */
-export const UNIT_TYPES = ['g', 'l', 'szt'] as const;
+export const UNIT_TYPES = ["g", "l", "szt"] as const;
 
 /** Meal category constants for validation */
-export const MEAL_CATEGORIES = ['śniadanie', 'obiad', 'kolacja', 'przekąska'] as const;
+export const MEAL_CATEGORIES = ["śniadanie", "obiad", "kolacja", "przekąska"] as const;
 
 /** Meal type constants for validation */
-export const MEAL_TYPES = [
-  'śniadanie',
-  'drugie śniadanie', 
-  'obiad',
-  'podwieczorek',
-  'kolacja'
-] as const;
+export const MEAL_TYPES = ["śniadanie", "drugie śniadanie", "obiad", "podwieczorek", "kolacja"] as const;
 
 /** Protein type constants for validation */
-export const PROTEIN_TYPES = ['ryba', 'drób', 'czerwone mięso', 'vege'] as const;
+export const PROTEIN_TYPES = ["ryba", "drób", "czerwone mięso", "vege"] as const;

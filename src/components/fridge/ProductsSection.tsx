@@ -1,7 +1,7 @@
-import React from 'react';
-import { ProductsList } from './ProductsList';
-import { EmptyState } from './EmptyState';
-import type { ProductDTO } from '@/types/fridge';
+import React from "react";
+import { ProductsList } from "./ProductsList";
+import { EmptyState } from "./EmptyState";
+import type { ProductDTO } from "@/types/fridge";
 
 interface ProductsSectionProps {
   products: ProductDTO[];
@@ -22,7 +22,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
   isSearching = false,
   onEdit,
   onDelete,
-  searchQuery = ''
+  searchQuery = "",
 }) => {
   const hasSearchQuery = searchQuery.trim().length > 0;
   const hasProducts = products.length > 0;
@@ -30,12 +30,12 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
   // Determine which empty state variant to show
   const getEmptyStateVariant = () => {
     if (hasSearchQuery && !hasProducts && !loading) {
-      return 'no-results';
+      return "no-results";
     }
     if (!hasSearchQuery && !hasProducts && !loading) {
-      return 'empty';
+      return "empty";
     }
-    return 'empty';
+    return "empty";
   };
 
   /**
@@ -43,8 +43,8 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
    */
   const handleAddFirst = () => {
     // This will be handled by parent component navigation
-    if (typeof window !== 'undefined') {
-      window.location.href = '/fridge/add';
+    if (typeof window !== "undefined") {
+      window.location.href = "/fridge/add";
     }
   };
 
@@ -58,13 +58,12 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
         <div className="mb-4 text-sm text-gray-600">
           {hasProducts ? (
             <>
-              Znaleziono <span className="font-medium">{products.length}</span> {
-                products.length === 1 ? 'produkt' :
-                products.length < 5 ? 'produkty' : 'produktów'
-              } dla "{searchQuery}"
+              Znaleziono <span className="font-medium">{products.length}</span>{" "}
+              {products.length === 1 ? "produkt" : products.length < 5 ? "produkty" : "produktów"} dla &quot;
+              {searchQuery}&quot;
             </>
           ) : (
-            <>Brak wyników dla "{searchQuery}"</>
+            <>Brak wyników dla &quot;{searchQuery}&quot;</>
           )}
         </div>
       )}
@@ -79,18 +78,13 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
           onDelete={onDelete}
         />
       ) : (
-        <EmptyState
-          onAddFirst={handleAddFirst}
-          variant={getEmptyStateVariant()}
-        />
+        <EmptyState onAddFirst={handleAddFirst} variant={getEmptyStateVariant()} />
       )}
 
       {/* Search suggestions for no results */}
       {hasSearchQuery && !hasProducts && !loading && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">
-            Nie znalazłeś tego czego szukasz?
-          </h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-2">Nie znalazłeś tego czego szukasz?</h4>
           <div className="space-y-2 text-sm text-gray-600">
             <p>Spróbuj:</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
@@ -100,7 +94,7 @@ export const ProductsSection: React.FC<ProductsSectionProps> = ({
               <li>Przeglądnąć produkty według kategorii</li>
             </ul>
           </div>
-          
+
           <div className="mt-4">
             <button
               onClick={handleAddFirst}

@@ -1,28 +1,22 @@
-import type { APIRoute } from 'astro';
-import type { UserProductResponse } from '../../../types';
-import { UserProductRepository } from '../../../repositories/UserProductRepository';
-import { UserProductService, UserProductServiceError } from '../../../services/UserProductService';
-import { requireDemoFriendlyAuth, checkUserRateLimit } from '../../../middleware/auth';
-import { 
+import type { APIRoute } from "astro";
+import type { UserProductResponse } from "../../../types";
+import { UserProductRepository } from "../../../repositories/UserProductRepository";
+import { UserProductService, UserProductServiceError } from "../../../services/UserProductService";
+import { requireDemoFriendlyAuth, checkUserRateLimit } from "../../../middleware/auth";
+import {
   validateProductId,
   validateUpdateUserProductWithBusinessRules,
-  formatValidationErrors
-} from '../../../validation/userProducts';
-import { 
-  createErrorResponse, 
-  ApiError, 
-  HttpStatus, 
-  ErrorCode,
-  withTimeout
-} from '../../../middleware/errorHandler';
+  formatValidationErrors,
+} from "../../../validation/userProducts";
+import { HttpStatus, withTimeout } from "../../../middleware/errorHandler";
 
 /**
  * PUT /api/user-products/:id
- * 
+ *
  * Updates an existing product in user's inventory.
  * Validates ownership, product data, and category existence.
  * Returns the updated product with computed fields.
- * 
+ *
  * Features:
  * - JWT authentication required
  * - Ownership validation
@@ -33,13 +27,13 @@ import {
 export const PUT: APIRoute = async ({ locals, request, params }) => {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
-  
-  console.info('UserProducts API: PUT request started', {
+
+  console.info("UserProducts API: PUT request started", {
     requestId,
     url: request.url,
     method: request.method,
     productId: params.id,
-    contentType: request.headers.get('content-type')
+    contentType: request.headers.get("content-type"),
   });
 
   try {
@@ -48,7 +42,7 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
       throw new ApiError(
         HttpStatus.SERVICE_UNAVAILABLE,
         ErrorCode.DATABASE_UNAVAILABLE,
-        'Database connection not available'
+        "Database connection not available"
       );
     }
 
@@ -57,33 +51,33 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
     // Rate limiting for authenticated users
     const rateLimitResult = checkUserRateLimit(user);
     if (!rateLimitResult.allowed) {
-      console.warn('UserProducts API: User rate limit exceeded', { 
+      console.warn("UserProducts API: User rate limit exceeded", {
         requestId,
-        userId: user.id.substring(0, 8) + '...',
-        productId: params.id
+        userId: user.id.substring(0, 8) + "...",
+        productId: params.id,
       });
-      
+
       throw new ApiError(
         HttpStatus.TOO_MANY_REQUESTS,
         ErrorCode.RATE_LIMIT_EXCEEDED,
-        'Rate limit exceeded for user. Please try again later.',
-        { retryAfter: rateLimitResult.headers['X-RateLimit-Reset-User'] }
+        "Rate limit exceeded for user. Please try again later.",
+        { retryAfter: rateLimitResult.headers["X-RateLimit-Reset-User"] }
       );
     }
 
     // Validate product ID parameter
     const paramsValidation = validateProductId(params);
     if (!paramsValidation.success) {
-      console.warn('UserProducts API: Invalid product ID parameter', {
+      console.warn("UserProducts API: Invalid product ID parameter", {
         requestId,
         errors: paramsValidation.errors,
-        productId: params.id
+        productId: params.id,
       });
 
       throw new ApiError(
         HttpStatus.BAD_REQUEST,
         ErrorCode.VALIDATION_ERROR,
-        'Invalid product ID',
+        "Invalid product ID",
         formatValidationErrors(paramsValidation.errors)
       );
     }
@@ -94,28 +88,24 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
     let requestBody;
     try {
       requestBody = await request.json();
-    } catch (error) {
-      throw new ApiError(
-        HttpStatus.BAD_REQUEST,
-        ErrorCode.VALIDATION_ERROR,
-        'Invalid JSON in request body'
-      );
+    } catch {
+      throw new ApiError(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_ERROR, "Invalid JSON in request body");
     }
 
     // Validate request body
     const bodyValidation = validateUpdateUserProductWithBusinessRules(requestBody);
     if (!bodyValidation.success) {
-      console.warn('UserProducts API: Request body validation failed', {
+      console.warn("UserProducts API: Request body validation failed", {
         requestId,
         productId,
         errors: bodyValidation.errors,
-        requestBody
+        requestBody,
       });
 
       throw new ApiError(
         HttpStatus.BAD_REQUEST,
         ErrorCode.VALIDATION_ERROR,
-        'Invalid product data',
+        "Invalid product data",
         formatValidationErrors(bodyValidation.errors)
       );
     }
@@ -123,28 +113,24 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
     const productData = bodyValidation.data;
 
     // Get JWT token from Authorization header for RLS context
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
     if (!token) {
-      throw new ApiError(
-        HttpStatus.UNAUTHORIZED,
-        ErrorCode.UNAUTHORIZED,
-        'Authorization token required'
-      );
+      throw new ApiError(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Authorization token required");
     }
 
     // Create authenticated Supabase client with user's JWT token for RLS context
-    const { createClient } = await import('@supabase/supabase-js');
+    const { createClient } = await import("@supabase/supabase-js");
     const authenticatedSupabase = createClient(
-      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL!,
-      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY!,
+      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || "",
+      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "",
       {
         global: {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       }
     );
 
@@ -156,73 +142,69 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
     const updateResult = await withTimeout(
       service.updateProduct(user.id, productId, productData),
       5000, // 5 seconds timeout for update operation
-      'Product update timeout'
+      "Product update timeout"
     );
 
     const responseTime = Date.now() - startTime;
 
-    console.info('UserProducts API: PUT request completed successfully', {
+    console.info("UserProducts API: PUT request completed successfully", {
       requestId,
-      userId: user.id.substring(0, 8) + '...',
+      userId: user.id.substring(0, 8) + "...",
       productId,
       productName: updateResult.product.name,
-      responseTime: `${responseTime}ms`
+      responseTime: `${responseTime}ms`,
     });
 
-    return new Response(
-      JSON.stringify(updateResult),
-      {
-        status: HttpStatus.OK,
-        headers: {
-          'Content-Type': 'application/json',
-          // Performance headers
-          'X-Response-Time': `${responseTime}ms`,
-          'X-Request-ID': requestId,
-          // Rate limiting headers
-          ...rateLimitResult.headers,
-          // Security headers
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY'
-        }
-      }
-    );
-
-  } catch (error) {
+    return new Response(JSON.stringify(updateResult), {
+      status: HttpStatus.OK,
+      headers: {
+        "Content-Type": "application/json",
+        // Performance headers
+        "X-Response-Time": `${responseTime}ms`,
+        "X-Request-ID": requestId,
+        // Rate limiting headers
+        ...rateLimitResult.headers,
+        // Security headers
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+      },
+    });
+  } catch {
     const responseTime = Date.now() - startTime;
-    
-    console.error('UserProducts API: PUT request error', {
+
+    console.error("UserProducts API: PUT request error", {
       requestId,
       productId: params.id,
       error: error instanceof Error ? error.message : String(error),
-      errorType: error instanceof ApiError ? 'ApiError' : error instanceof UserProductServiceError ? 'ServiceError' : 'UnknownError',
+      errorType:
+        error instanceof ApiError
+          ? "ApiError"
+          : error instanceof UserProductServiceError
+            ? "ServiceError"
+            : "UnknownError",
       stack: error instanceof Error ? error.stack : undefined,
-      responseTime: `${responseTime}ms`
+      responseTime: `${responseTime}ms`,
     });
 
     // Convert service errors to API errors
     if (error instanceof UserProductServiceError) {
-      error = new ApiError(
-        error.statusCode as HttpStatus,
-        error.code as ErrorCode,
-        error.message,
-        error.details
-      );
+      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
     }
 
     const errorResponse = createErrorResponse(error, requestId);
-    errorResponse.headers.set('X-Response-Time', `${responseTime}ms`);
-    
+    errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
+
     return errorResponse;
   }
 };
 
 /**
  * DELETE /api/user-products/:id
- * 
+ *
  * Deletes a product from user's inventory.
  * Validates ownership before deletion.
  * Returns success confirmation.
- * 
+ *
  * Features:
  * - JWT authentication required
  * - Ownership validation
@@ -232,12 +214,12 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
 export const DELETE: APIRoute = async ({ locals, request, params }) => {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
-  
-  console.info('UserProducts API: DELETE request started', {
+
+  console.info("UserProducts API: DELETE request started", {
     requestId,
     url: request.url,
     method: request.method,
-    productId: params.id
+    productId: params.id,
   });
 
   try {
@@ -246,7 +228,7 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
       throw new ApiError(
         HttpStatus.SERVICE_UNAVAILABLE,
         ErrorCode.DATABASE_UNAVAILABLE,
-        'Database connection not available'
+        "Database connection not available"
       );
     }
 
@@ -255,33 +237,33 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
     // Rate limiting for authenticated users
     const rateLimitResult = checkUserRateLimit(user);
     if (!rateLimitResult.allowed) {
-      console.warn('UserProducts API: User rate limit exceeded', { 
+      console.warn("UserProducts API: User rate limit exceeded", {
         requestId,
-        userId: user.id.substring(0, 8) + '...',
-        productId: params.id
+        userId: user.id.substring(0, 8) + "...",
+        productId: params.id,
       });
-      
+
       throw new ApiError(
         HttpStatus.TOO_MANY_REQUESTS,
         ErrorCode.RATE_LIMIT_EXCEEDED,
-        'Rate limit exceeded for user. Please try again later.',
-        { retryAfter: rateLimitResult.headers['X-RateLimit-Reset-User'] }
+        "Rate limit exceeded for user. Please try again later.",
+        { retryAfter: rateLimitResult.headers["X-RateLimit-Reset-User"] }
       );
     }
 
     // Validate product ID parameter
     const paramsValidation = validateProductId(params);
     if (!paramsValidation.success) {
-      console.warn('UserProducts API: Invalid product ID parameter', {
+      console.warn("UserProducts API: Invalid product ID parameter", {
         requestId,
         errors: paramsValidation.errors,
-        productId: params.id
+        productId: params.id,
       });
 
       throw new ApiError(
         HttpStatus.BAD_REQUEST,
         ErrorCode.VALIDATION_ERROR,
-        'Invalid product ID',
+        "Invalid product ID",
         formatValidationErrors(paramsValidation.errors)
       );
     }
@@ -289,28 +271,24 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
     const { id: productId } = paramsValidation.data;
 
     // Get JWT token from Authorization header for RLS context
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
     if (!token) {
-      throw new ApiError(
-        HttpStatus.UNAUTHORIZED,
-        ErrorCode.UNAUTHORIZED,
-        'Authorization token required'
-      );
+      throw new ApiError(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Authorization token required");
     }
 
     // Create authenticated Supabase client with user's JWT token for RLS context
-    const { createClient } = await import('@supabase/supabase-js');
+    const { createClient } = await import("@supabase/supabase-js");
     const authenticatedSupabase = createClient(
-      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL!,
-      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY!,
+      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || "",
+      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "",
       {
         global: {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       }
     );
 
@@ -322,71 +300,67 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
     const deleteResult = await withTimeout(
       service.deleteProduct(user.id, productId),
       3000, // 3 seconds timeout for delete operation
-      'Product deletion timeout'
+      "Product deletion timeout"
     );
 
     const responseTime = Date.now() - startTime;
 
-    console.info('UserProducts API: DELETE request completed successfully', {
+    console.info("UserProducts API: DELETE request completed successfully", {
       requestId,
-      userId: user.id.substring(0, 8) + '...',
+      userId: user.id.substring(0, 8) + "...",
       productId,
-      responseTime: `${responseTime}ms`
+      responseTime: `${responseTime}ms`,
     });
 
-    return new Response(
-      JSON.stringify(deleteResult),
-      {
-        status: HttpStatus.OK,
-        headers: {
-          'Content-Type': 'application/json',
-          // Performance headers
-          'X-Response-Time': `${responseTime}ms`,
-          'X-Request-ID': requestId,
-          // Rate limiting headers
-          ...rateLimitResult.headers,
-          // Security headers
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY'
-        }
-      }
-    );
-
-  } catch (error) {
+    return new Response(JSON.stringify(deleteResult), {
+      status: HttpStatus.OK,
+      headers: {
+        "Content-Type": "application/json",
+        // Performance headers
+        "X-Response-Time": `${responseTime}ms`,
+        "X-Request-ID": requestId,
+        // Rate limiting headers
+        ...rateLimitResult.headers,
+        // Security headers
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+      },
+    });
+  } catch {
     const responseTime = Date.now() - startTime;
-    
-    console.error('UserProducts API: DELETE request error', {
+
+    console.error("UserProducts API: DELETE request error", {
       requestId,
       productId: params.id,
       error: error instanceof Error ? error.message : String(error),
-      errorType: error instanceof ApiError ? 'ApiError' : error instanceof UserProductServiceError ? 'ServiceError' : 'UnknownError',
+      errorType:
+        error instanceof ApiError
+          ? "ApiError"
+          : error instanceof UserProductServiceError
+            ? "ServiceError"
+            : "UnknownError",
       stack: error instanceof Error ? error.stack : undefined,
-      responseTime: `${responseTime}ms`
+      responseTime: `${responseTime}ms`,
     });
 
     // Convert service errors to API errors
     if (error instanceof UserProductServiceError) {
-      error = new ApiError(
-        error.statusCode as HttpStatus,
-        error.code as ErrorCode,
-        error.message,
-        error.details
-      );
+      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
     }
 
     const errorResponse = createErrorResponse(error, requestId);
-    errorResponse.headers.set('X-Response-Time', `${responseTime}ms`);
-    
+    errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
+
     return errorResponse;
   }
 };
 
 /**
  * GET /api/user-products/:id
- * 
+ *
  * Retrieves a single product from user's inventory.
  * Validates ownership and returns product with computed fields.
- * 
+ *
  * Features:
  * - JWT authentication required
  * - Ownership validation
@@ -396,12 +370,12 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
 export const GET: APIRoute = async ({ locals, request, params }) => {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
-  
-  console.info('UserProducts API: GET single product request started', {
+
+  console.info("UserProducts API: GET single product request started", {
     requestId,
     url: request.url,
     method: request.method,
-    productId: params.id
+    productId: params.id,
   });
 
   try {
@@ -410,7 +384,7 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
       throw new ApiError(
         HttpStatus.SERVICE_UNAVAILABLE,
         ErrorCode.DATABASE_UNAVAILABLE,
-        'Database connection not available'
+        "Database connection not available"
       );
     }
 
@@ -419,33 +393,33 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
     // Rate limiting for authenticated users
     const rateLimitResult = checkUserRateLimit(user);
     if (!rateLimitResult.allowed) {
-      console.warn('UserProducts API: User rate limit exceeded', { 
+      console.warn("UserProducts API: User rate limit exceeded", {
         requestId,
-        userId: user.id.substring(0, 8) + '...',
-        productId: params.id
+        userId: user.id.substring(0, 8) + "...",
+        productId: params.id,
       });
-      
+
       throw new ApiError(
         HttpStatus.TOO_MANY_REQUESTS,
         ErrorCode.RATE_LIMIT_EXCEEDED,
-        'Rate limit exceeded for user. Please try again later.',
-        { retryAfter: rateLimitResult.headers['X-RateLimit-Reset-User'] }
+        "Rate limit exceeded for user. Please try again later.",
+        { retryAfter: rateLimitResult.headers["X-RateLimit-Reset-User"] }
       );
     }
 
     // Validate product ID parameter
     const paramsValidation = validateProductId(params);
     if (!paramsValidation.success) {
-      console.warn('UserProducts API: Invalid product ID parameter', {
+      console.warn("UserProducts API: Invalid product ID parameter", {
         requestId,
         errors: paramsValidation.errors,
-        productId: params.id
+        productId: params.id,
       });
 
       throw new ApiError(
         HttpStatus.BAD_REQUEST,
         ErrorCode.VALIDATION_ERROR,
-        'Invalid product ID',
+        "Invalid product ID",
         formatValidationErrors(paramsValidation.errors)
       );
     }
@@ -453,28 +427,24 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
     const { id: productId } = paramsValidation.data;
 
     // Get JWT token from Authorization header for RLS context
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    
+    const authHeader = request.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+
     if (!token) {
-      throw new ApiError(
-        HttpStatus.UNAUTHORIZED,
-        ErrorCode.UNAUTHORIZED,
-        'Authorization token required'
-      );
+      throw new ApiError(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Authorization token required");
     }
 
     // Create authenticated Supabase client with user's JWT token for RLS context
-    const { createClient } = await import('@supabase/supabase-js');
+    const { createClient } = await import("@supabase/supabase-js");
     const authenticatedSupabase = createClient(
-      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL!,
-      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY!,
+      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || "",
+      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "",
       {
         global: {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       }
     );
 
@@ -486,79 +456,72 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
     const product = await withTimeout(
       service.getProductById(user.id, productId),
       3000, // 3 seconds timeout for single product fetch
-      'Product fetch timeout'
+      "Product fetch timeout"
     );
 
     if (!product) {
-      throw new ApiError(
-        HttpStatus.NOT_FOUND,
-        ErrorCode.NOT_FOUND,
-        'Product not found or access denied',
-        { productId }
-      );
+      throw new ApiError(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND, "Product not found or access denied", {
+        productId,
+      });
     }
 
     const responseTime = Date.now() - startTime;
 
-    console.info('UserProducts API: GET single product request completed successfully', {
+    console.info("UserProducts API: GET single product request completed successfully", {
       requestId,
-      userId: user.id.substring(0, 8) + '...',
+      userId: user.id.substring(0, 8) + "...",
       productId,
       productName: product.name,
-      responseTime: `${responseTime}ms`
+      responseTime: `${responseTime}ms`,
     });
 
     const response: UserProductResponse = {
       success: true,
-      product
+      product,
     };
 
-    return new Response(
-      JSON.stringify(response),
-      {
-        status: HttpStatus.OK,
-        headers: {
-          'Content-Type': 'application/json',
-          // Performance headers
-          'X-Response-Time': `${responseTime}ms`,
-          'X-Request-ID': requestId,
-          // Rate limiting headers
-          ...rateLimitResult.headers,
-          // Security headers
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY',
-          // Cache headers for single product
-          'Cache-Control': 'private, max-age=300', // 5 minutes private cache
-          'ETag': `"${product.id}-${product.createdAt}"`
-        }
-      }
-    );
-
-  } catch (error) {
+    return new Response(JSON.stringify(response), {
+      status: HttpStatus.OK,
+      headers: {
+        "Content-Type": "application/json",
+        // Performance headers
+        "X-Response-Time": `${responseTime}ms`,
+        "X-Request-ID": requestId,
+        // Rate limiting headers
+        ...rateLimitResult.headers,
+        // Security headers
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        // Cache headers for single product
+        "Cache-Control": "private, max-age=300", // 5 minutes private cache
+        ETag: `"${product.id}-${product.createdAt}"`,
+      },
+    });
+  } catch {
     const responseTime = Date.now() - startTime;
-    
-    console.error('UserProducts API: GET single product request error', {
+
+    console.error("UserProducts API: GET single product request error", {
       requestId,
       productId: params.id,
       error: error instanceof Error ? error.message : String(error),
-      errorType: error instanceof ApiError ? 'ApiError' : error instanceof UserProductServiceError ? 'ServiceError' : 'UnknownError',
+      errorType:
+        error instanceof ApiError
+          ? "ApiError"
+          : error instanceof UserProductServiceError
+            ? "ServiceError"
+            : "UnknownError",
       stack: error instanceof Error ? error.stack : undefined,
-      responseTime: `${responseTime}ms`
+      responseTime: `${responseTime}ms`,
     });
 
     // Convert service errors to API errors
     if (error instanceof UserProductServiceError) {
-      error = new ApiError(
-        error.statusCode as HttpStatus,
-        error.code as ErrorCode,
-        error.message,
-        error.details
-      );
+      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
     }
 
     const errorResponse = createErrorResponse(error, requestId);
-    errorResponse.headers.set('X-Response-Time', `${responseTime}ms`);
-    
+    errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
+
     return errorResponse;
   }
 };

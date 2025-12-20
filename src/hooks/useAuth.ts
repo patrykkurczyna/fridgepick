@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { createSupabaseClientInstance } from '../db/supabase.client.ts';
-import type { UserDTO } from '@/types';
+import { useState, useEffect, useCallback } from "react";
+import { createSupabaseClientInstance } from "../db/supabase.client.ts";
+import type { UserDTO } from "@/types";
 
 // localStorage keys
-const ACCESS_TOKEN_KEY = 'fridgepick_access_token';
-const USER_KEY = 'fridgepick_user';
-const DEMO_CREDENTIALS_KEY = 'fridgepick_demo_credentials';
+const ACCESS_TOKEN_KEY = "fridgepick_access_token";
+const USER_KEY = "fridgepick_user";
+const DEMO_CREDENTIALS_KEY = "fridgepick_demo_credentials";
 
 interface AuthState {
   user: UserDTO | null;
@@ -61,18 +61,12 @@ interface DemoResponse {
   error?: string;
 }
 
-interface LogoutResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
 /**
  * Helper function to get the current access token from localStorage
  * @returns Access token string or null if not available
  */
 export const getAccessToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   return localStorage.getItem(ACCESS_TOKEN_KEY);
 };
 
@@ -83,7 +77,10 @@ export const getAccessToken = (): string | null => {
 export const useAuth = (): AuthState & {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  register: (email: string, password: string) => Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean }>;
+  register: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string; requiresEmailVerification?: boolean }>;
   createDemoUser: () => Promise<{ success: boolean; error?: string; demoEmail?: string }>;
   getAccessToken: () => string | null;
 } => {
@@ -100,7 +97,7 @@ export const useAuth = (): AuthState & {
    * Load user from localStorage cache (fast initial load)
    */
   const loadUserFromCache = useCallback(() => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
 
     const cachedUser = localStorage.getItem(USER_KEY);
     const cachedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -122,7 +119,7 @@ export const useAuth = (): AuthState & {
    * Save user and token to localStorage
    */
   const saveToCache = useCallback((user: UserDTO, accessToken: string) => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
@@ -132,7 +129,7 @@ export const useAuth = (): AuthState & {
    * Clear user and token from localStorage
    */
   const clearCache = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -161,7 +158,7 @@ export const useAuth = (): AuthState & {
       if (session?.user) {
         const user: UserDTO = {
           id: session.user.id,
-          email: session.user.email!,
+          email: session.user.email || "",
           isDemo: session.user.user_metadata?.is_demo ?? false,
           isEmailVerified: session.user.email_confirmed_at !== null,
         };
@@ -184,8 +181,8 @@ export const useAuth = (): AuthState & {
           isAuthenticated: false,
         });
       }
-    } catch (error) {
-      console.error('Auth check error:', error);
+    } catch {
+      console.error("Auth check error:", error);
       clearCache();
 
       setState({
@@ -200,17 +197,13 @@ export const useAuth = (): AuthState & {
    * Login with email and password
    */
   const login = useCallback(
-    async (
-      email: string,
-      password: string,
-      rememberMe: boolean = false
-    ): Promise<{ success: boolean; error?: string }> => {
+    async (email: string, password: string, rememberMe = false): Promise<{ success: boolean; error?: string }> => {
       try {
         setState((prev) => ({ ...prev, loading: true }));
 
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password, rememberMe }),
         });
 
@@ -236,12 +229,12 @@ export const useAuth = (): AuthState & {
           return { success: true };
         } else {
           setState((prev) => ({ ...prev, loading: false }));
-          return { success: false, error: data.error || 'Logowanie nie powiodło się' };
+          return { success: false, error: data.error || "Logowanie nie powiodło się" };
         }
-      } catch (error) {
-        console.error('Login error:', error);
+      } catch {
+        console.error("Login error:", error);
         setState((prev) => ({ ...prev, loading: false }));
-        return { success: false, error: 'Wystąpił błąd połączenia' };
+        return { success: false, error: "Wystąpił błąd połączenia" };
       }
     },
     [saveToCache]
@@ -258,9 +251,9 @@ export const useAuth = (): AuthState & {
       try {
         setState((prev) => ({ ...prev, loading: true }));
 
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
 
@@ -293,12 +286,12 @@ export const useAuth = (): AuthState & {
           return { success: true, requiresEmailVerification: false };
         } else {
           setState((prev) => ({ ...prev, loading: false }));
-          return { success: false, error: data.error || 'Rejestracja nie powiodła się' };
+          return { success: false, error: data.error || "Rejestracja nie powiodła się" };
         }
-      } catch (error) {
-        console.error('Register error:', error);
+      } catch {
+        console.error("Register error:", error);
         setState((prev) => ({ ...prev, loading: false }));
-        return { success: false, error: 'Wystąpił błąd połączenia' };
+        return { success: false, error: "Wystąpił błąd połączenia" };
       }
     },
     []
@@ -318,9 +311,7 @@ export const useAuth = (): AuthState & {
       setState((prev) => ({ ...prev, loading: true }));
 
       // Check if we have existing demo credentials in localStorage
-      const storedCredentials = typeof window !== 'undefined'
-        ? localStorage.getItem(DEMO_CREDENTIALS_KEY)
-        : null;
+      const storedCredentials = typeof window !== "undefined" ? localStorage.getItem(DEMO_CREDENTIALS_KEY) : null;
 
       if (storedCredentials) {
         try {
@@ -330,27 +321,27 @@ export const useAuth = (): AuthState & {
           const loginResult = await login(email, password, false);
 
           if (loginResult.success) {
-            console.log('Logged in with existing demo user:', email);
+            console.log("Logged in with existing demo user:", email);
             setState((prev) => ({ ...prev, loading: false }));
             return {
               success: true,
-              demoEmail: email
+              demoEmail: email,
             };
           } else {
             // Login failed (user might have been deleted), remove invalid credentials
-            console.log('Existing demo credentials invalid, creating new demo user');
+            console.log("Existing demo credentials invalid, creating new demo user");
             localStorage.removeItem(DEMO_CREDENTIALS_KEY);
           }
         } catch (parseError) {
-          console.error('Error parsing demo credentials:', parseError);
+          console.error("Error parsing demo credentials:", parseError);
           localStorage.removeItem(DEMO_CREDENTIALS_KEY);
         }
       }
 
       // No existing credentials or login failed - create new demo user
-      const response = await fetch('/api/auth/demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/demo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
       });
 
       const data: DemoResponse = await response.json();
@@ -369,12 +360,12 @@ export const useAuth = (): AuthState & {
         // Save demo credentials to localStorage for future use
         // Note: We need to get the password from the response
         // The API should return demoPassword for this purpose
-        if (data.demoEmail && (data as any).demoPassword) {
+        if (data.demoEmail && (data as unknown).demoPassword) {
           localStorage.setItem(
             DEMO_CREDENTIALS_KEY,
             JSON.stringify({
               email: data.demoEmail,
-              password: (data as any).demoPassword,
+              password: (data as unknown).demoPassword,
             })
           );
         }
@@ -388,12 +379,12 @@ export const useAuth = (): AuthState & {
         return { success: true, demoEmail: data.demoEmail };
       } else {
         setState((prev) => ({ ...prev, loading: false }));
-        return { success: false, error: data.error || 'Nie udało się utworzyć konta demo' };
+        return { success: false, error: data.error || "Nie udało się utworzyć konta demo" };
       }
-    } catch (error) {
-      console.error('Demo user creation error:', error);
+    } catch {
+      console.error("Demo user creation error:", error);
       setState((prev) => ({ ...prev, loading: false }));
-      return { success: false, error: 'Wystąpił błąd połączenia' };
+      return { success: false, error: "Wystąpił błąd połączenia" };
     }
   }, [saveToCache, login]);
 
@@ -405,8 +396,8 @@ export const useAuth = (): AuthState & {
       setState((prev) => ({ ...prev, loading: true }));
 
       // Call logout API
-      await fetch('/api/auth/logout', {
-        method: 'POST',
+      await fetch("/api/auth/logout", {
+        method: "POST",
       });
 
       // Clear cache
@@ -420,9 +411,9 @@ export const useAuth = (): AuthState & {
       });
 
       // Redirect to landing page
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Logout error:', error);
+      window.location.assign("/");
+    } catch {
+      console.error("Logout error:", error);
       // Even if API fails, clear local state
       clearCache();
       setState({
@@ -430,7 +421,7 @@ export const useAuth = (): AuthState & {
         loading: false,
         isAuthenticated: false,
       });
-      window.location.href = '/';
+      window.location.assign("/");
     }
   }, [clearCache]);
 
@@ -447,7 +438,7 @@ export const useAuth = (): AuthState & {
       if (session?.user) {
         const user: UserDTO = {
           id: session.user.id,
-          email: session.user.email!,
+          email: session.user.email || "",
           isDemo: session.user.user_metadata?.is_demo ?? false,
           isEmailVerified: session.user.email_confirmed_at !== null,
         };

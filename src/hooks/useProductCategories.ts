@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { ProductCategory } from '@/types/fridge';
-import type { ProductCategoriesResponse } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect, useCallback } from "react";
+import type { ProductCategory } from "@/types/fridge";
+import type { ProductCategoriesResponse } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Custom hook for fetching and caching product categories
@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
  */
 export const useProductCategories = () => {
   const { isAuthenticated, user } = useAuth();
-  
+
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,20 +21,20 @@ export const useProductCategories = () => {
   const fetchCategories = useCallback(async () => {
     if (!isAuthenticated) {
       setLoading(false);
-      setError('Not authenticated');
+      setError("Not authenticated");
       return;
     }
 
     // Check cache first (1 hour TTL)
-    const cacheKey = 'product-categories';
-    const cacheTimestampKey = 'product-categories-timestamp';
+    const cacheKey = "product-categories";
+    const cacheTimestampKey = "product-categories-timestamp";
     const cachedData = localStorage.getItem(cacheKey);
     const cacheTimestamp = localStorage.getItem(cacheTimestampKey);
-    
+
     if (cachedData && cacheTimestamp) {
       const cacheAge = Date.now() - parseInt(cacheTimestamp, 10);
       const cacheMaxAge = 60 * 60 * 1000; // 1 hour
-      
+
       if (cacheAge < cacheMaxAge) {
         try {
           const parsed = JSON.parse(cachedData) as ProductCategory[];
@@ -55,11 +55,11 @@ export const useProductCategories = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/product-categories', {
+      const response = await fetch("/api/product-categories", {
         headers: {
-          'Authorization': `Bearer ${user?.accessToken}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${user?.accessToken}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (!response.ok) {
@@ -67,39 +67,44 @@ export const useProductCategories = () => {
       }
 
       const data: ProductCategoriesResponse = await response.json();
-      
+
       setCategories(data.categories);
       setLoading(false);
       setError(null);
-      
+
       const timestamp = Date.now();
       setLastFetch(new Date(timestamp));
 
       // Cache the results
       localStorage.setItem(cacheKey, JSON.stringify(data.categories));
       localStorage.setItem(cacheTimestampKey, String(timestamp));
-
-    } catch (error) {
-      console.error('Error fetching product categories:', error);
+    } catch {
+      console.error("Error fetching product categories:", error);
       setLoading(false);
-      setError(error instanceof Error ? error.message : 'Unknown error occurred');
+      setError(error instanceof Error ? error.message : "Unknown error occurred");
     }
   }, [isAuthenticated, user?.accessToken]);
 
   /**
    * Get category name by ID with fallback
    */
-  const getCategoryName = useCallback((categoryId: number): string => {
-    const category = categories.find(c => c.id === categoryId);
-    return category ? category.name : `Kategoria ${categoryId}`;
-  }, [categories]);
+  const getCategoryName = useCallback(
+    (categoryId: number): string => {
+      const category = categories.find((c) => c.id === categoryId);
+      return category ? category.name : `Kategoria ${categoryId}`;
+    },
+    [categories]
+  );
 
   /**
    * Get category by ID
    */
-  const getCategoryById = useCallback((categoryId: number): ProductCategory | undefined => {
-    return categories.find(c => c.id === categoryId);
-  }, [categories]);
+  const getCategoryById = useCallback(
+    (categoryId: number): ProductCategory | undefined => {
+      return categories.find((c) => c.id === categoryId);
+    },
+    [categories]
+  );
 
   /**
    * Check if categories are available
@@ -117,8 +122,8 @@ export const useProductCategories = () => {
    * Clear cache and refetch
    */
   const refresh = useCallback(() => {
-    localStorage.removeItem('product-categories');
-    localStorage.removeItem('product-categories-timestamp');
+    localStorage.removeItem("product-categories");
+    localStorage.removeItem("product-categories-timestamp");
     fetchCategories();
   }, [fetchCategories]);
 
@@ -147,6 +152,6 @@ export const useProductCategories = () => {
 
     // Actions
     retry,
-    refresh
+    refresh,
   };
 };

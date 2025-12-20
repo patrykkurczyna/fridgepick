@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 /**
  * POST /api/auth/demo
@@ -19,9 +19,8 @@ export const POST: APIRoute = async ({ locals }) => {
     const demoEmail = `demo_${timestamp}_${randomSuffix}@fridgepick.local`;
 
     // Generate random password (user won't need it)
-    const demoPassword = Math.random().toString(36).substring(2, 15) +
-                         Math.random().toString(36).substring(2, 15) +
-                         'Aa1!'; // Ensure it meets password requirements
+    const demoPassword =
+      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "Aa1!"; // Ensure it meets password requirements
 
     // Calculate expiry date (7 days from now)
     const expiryDate = new Date();
@@ -42,15 +41,15 @@ export const POST: APIRoute = async ({ locals }) => {
     });
 
     if (error) {
-      console.error('Demo user creation error:', error);
+      console.error("Demo user creation error:", error);
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Nie udało się utworzyć konta demo. Spróbuj ponownie.',
+          error: "Nie udało się utworzyć konta demo. Spróbuj ponownie.",
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -60,11 +59,11 @@ export const POST: APIRoute = async ({ locals }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Nie udało się utworzyć konta demo',
+          error: "Nie udało się utworzyć konta demo",
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -72,19 +71,19 @@ export const POST: APIRoute = async ({ locals }) => {
     // CRITICAL: Sync user to public.users table using SECURITY DEFINER function
     // This bypasses RLS policies that would block direct INSERT
     try {
-      const { error: syncError } = await locals.supabase.rpc('sync_user_to_public', {
+      const { error: syncError } = await locals.supabase.rpc("sync_user_to_public", {
         user_id: data.user.id,
         user_email: demoEmail,
         email_verified: true,
       });
 
       if (syncError) {
-        console.error('Error syncing demo user to public.users:', syncError);
+        console.error("Error syncing demo user to public.users:", syncError);
         // Don't fail the whole request - user is created in auth.users
         // This might happen if user already exists in public.users
       }
     } catch (syncError) {
-      console.error('Exception syncing demo user:', syncError);
+      console.error("Exception syncing demo user:", syncError);
       // Continue anyway
     }
 
@@ -102,30 +101,30 @@ export const POST: APIRoute = async ({ locals }) => {
         },
         demoEmail,
         demoPassword, // Return password for localStorage caching (client-side only)
-        expiresIn: '7 dni',
+        expiresIn: "7 dni",
         expiresAt: expiryDate.toISOString(),
         session: {
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
           expires_at: data.session.expires_at,
         },
-        message: 'Konto demo zostało utworzone. Twoje dane będą dostępne przez 7 dni.',
+        message: "Konto demo zostało utworzone. Twoje dane będą dostępne przez 7 dni.",
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
-  } catch (error) {
-    console.error('Demo API error:', error);
+  } catch {
+    console.error("Demo API error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Wystąpił błąd serwera. Spróbuj ponownie później.',
+        error: "Wystąpił błąd serwera. Spróbuj ponownie później.",
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

@@ -1,7 +1,7 @@
-import React from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline';
-import { Logo } from '../Logo';
-import { UserMenu } from './UserMenu';
+import React from "react";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { Logo } from "../Logo";
+import { UserMenu } from "./UserMenu";
 
 interface FridgeHeaderProps {
   onAddProduct: () => void;
@@ -25,12 +25,8 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct }) => {
           </a>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-gray-900 md:text-2xl truncate">
-              Moja Lodówka
-            </h1>
-            <p className="mt-0.5 text-xs text-gray-500 md:text-sm">
-              Zarządzaj produktami w swojej lodówce i spiżarni
-            </p>
+            <h1 className="text-xl font-bold text-gray-900 md:text-2xl truncate">Moja Lodówka</h1>
+            <p className="mt-0.5 text-xs text-gray-500 md:text-sm">Zarządzaj produktami w swojej lodówce i spiżarni</p>
           </div>
 
           {/* User Menu */}

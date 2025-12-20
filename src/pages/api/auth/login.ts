@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 /**
  * POST /api/auth/login
@@ -19,31 +19,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // Parse request body
     const body = await request.json();
-    const { email, password, rememberMe = false } = body;
+    const { email, password } = body;
 
     // Validate input
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== "string") {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Email jest wymagany',
+          error: "Email jest wymagany",
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
 
-    if (!password || typeof password !== 'string') {
+    if (!password || typeof password !== "string") {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Hasło jest wymagane',
+          error: "Hasło jest wymagane",
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -54,11 +54,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Nieprawidłowy format email',
+          error: "Nieprawidłowy format email",
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -68,11 +68,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Hasło musi mieć minimum 8 znaków',
+          error: "Hasło musi mieć minimum 8 znaków",
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -85,14 +85,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (error) {
       // Map Supabase errors to user-friendly messages
-      let errorMessage = 'Wystąpił błąd podczas logowania';
+      let errorMessage = "Wystąpił błąd podczas logowania";
 
-      if (error.message.includes('Invalid login credentials')) {
-        errorMessage = 'Nieprawidłowy email lub hasło';
-      } else if (error.message.includes('Email not confirmed')) {
-        errorMessage = 'Email nie został zweryfikowany. Sprawdź swoją skrzynkę pocztową.';
-      } else if (error.message.includes('Too many requests')) {
-        errorMessage = 'Zbyt wiele prób logowania. Spróbuj ponownie za chwilę.';
+      if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Nieprawidłowy email lub hasło";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Email nie został zweryfikowany. Sprawdź swoją skrzynkę pocztową.";
+      } else if (error.message.includes("Too many requests")) {
+        errorMessage = "Zbyt wiele prób logowania. Spróbuj ponownie za chwilę.";
       }
 
       return new Response(
@@ -102,7 +102,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }),
         {
           status: 401,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -112,11 +112,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Nie udało się zalogować użytkownika',
+          error: "Nie udało się zalogować użytkownika",
         }),
         {
           status: 401,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -140,19 +140,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
-  } catch (error) {
-    console.error('Login API error:', error);
+  } catch {
+    console.error("Login API error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Wystąpił błąd serwera. Spróbuj ponownie później.',
+        error: "Wystąpił błąd serwera. Spróbuj ponownie później.",
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

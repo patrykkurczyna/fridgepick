@@ -1,13 +1,13 @@
-import React from 'react';
-import { FridgeHeader } from './FridgeHeader';
-import { FridgeFilters } from './FridgeFilters';
-import { QuickAddPanel } from './QuickAddPanel';
-import { ProductsSection } from './ProductsSection';
-import { Pagination } from './Pagination';
-import { useRealFridgeProducts as useFridgeProducts } from '@/hooks/useRealFridgeProducts';
-import { useProductCategories } from '@/hooks/useProductCategories';
-import { useAuth, getAccessToken } from '@/hooks/useAuth';
-import type { QuickAddItem } from '@/types/fridge';
+import React from "react";
+import { FridgeHeader } from "./FridgeHeader";
+import { FridgeFilters } from "./FridgeFilters";
+import { QuickAddPanel } from "./QuickAddPanel";
+import { ProductsSection } from "./ProductsSection";
+import { Pagination } from "./Pagination";
+import { useRealFridgeProducts as useFridgeProducts } from "@/hooks/useRealFridgeProducts";
+import { useProductCategories } from "@/hooks/useProductCategories";
+import { getAccessToken } from "@/hooks/useAuth";
+import type { QuickAddItem } from "@/types/fridge";
 
 /**
  * Główny container widoku lodówki
@@ -24,13 +24,12 @@ export const FridgeView: React.FC = () => {
     searchQuery,
     sortBy,
     pagination,
-    hasMore,
     handleSearch,
     handleSortChange,
     handlePageChange,
     retry,
     refresh,
-    clearSearch
+    clearSearch,
   } = useFridgeProducts();
 
   // Quick add panel state
@@ -40,7 +39,7 @@ export const FridgeView: React.FC = () => {
    * Handle navigation to add product page
    */
   const handleAddProduct = () => {
-    window.location.href = '/fridge/add';
+    window.location.href = "/fridge/add";
   };
 
   /**
@@ -54,23 +53,23 @@ export const FridgeView: React.FC = () => {
    * Handle product deletion
    */
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Czy na pewno chcesz usunąć ten produkt?')) {
+    if (!confirm("Czy na pewno chcesz usunąć ten produkt?")) {
       return;
     }
 
     try {
       const jwtToken = getAccessToken();
       if (!jwtToken) {
-        alert('Brak autoryzacji. Zaloguj się ponownie.');
+        alert("Brak autoryzacji. Zaloguj się ponownie.");
         return;
       }
 
       const response = await fetch(`/api/user-products/${productId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${jwtToken}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (response.ok) {
@@ -78,13 +77,13 @@ export const FridgeView: React.FC = () => {
         refresh();
 
         // Show success message (could be replaced with toast notification)
-        alert('Produkt został usunięty pomyślnie');
+        alert("Produkt został usunięty pomyślnie");
       } else {
-        throw new Error('Nie udało się usunąć produktu');
+        throw new Error("Nie udało się usunąć produktu");
       }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Wystąpił błąd podczas usuwania produktu');
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      alert("Wystąpił błąd podczas usuwania produktu");
     }
   };
 
@@ -96,26 +95,26 @@ export const FridgeView: React.FC = () => {
       // Get JWT token from useAuth (dynamic token)
       const jwtToken = getAccessToken();
       if (!jwtToken) {
-        alert('Brak autoryzacji. Zaloguj się ponownie.');
-        throw new Error('No access token');
+        alert("Brak autoryzacji. Zaloguj się ponownie.");
+        throw new Error("No access token");
       }
 
       // Merge item with custom data from modal
       const finalItem = { ...item, ...customData };
 
-      const response = await fetch('/api/user-products', {
-        method: 'POST',
+      const response = await fetch("/api/user-products", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${jwtToken}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: finalItem.name,
           categoryId: finalItem.categoryId,
-          quantity: (finalItem as any).quantity || finalItem.defaultQuantity,
-          unit: (finalItem as any).unit || finalItem.defaultUnit,
-          expiresAt: finalItem.expiresAt || undefined
-        })
+          quantity: (finalItem as QuickAddItem & { quantity?: number }).quantity || finalItem.defaultQuantity,
+          unit: (finalItem as QuickAddItem & { unit?: string }).unit || finalItem.defaultUnit,
+          expiresAt: finalItem.expiresAt || undefined,
+        }),
       });
 
       if (response.ok) {
@@ -125,11 +124,11 @@ export const FridgeView: React.FC = () => {
         // Show success message
         alert(`Dodano ${finalItem.name} do lodówki`);
       } else {
-        throw new Error('Nie udało się dodać produktu');
+        throw new Error("Nie udało się dodać produktu");
       }
-    } catch (error) {
-      console.error('Error adding quick product:', error);
-      throw error; // Re-throw for component error handling
+    } catch (err) {
+      console.error("Error adding quick product:", err);
+      throw err; // Re-throw for component error handling
     }
   };
 
@@ -137,7 +136,7 @@ export const FridgeView: React.FC = () => {
    * Toggle quick add panel
    */
   const handleQuickAddToggle = () => {
-    setQuickAddExpanded(prev => !prev);
+    setQuickAddExpanded((prev) => !prev);
   };
 
   // Error boundary fallback
@@ -146,9 +145,7 @@ export const FridgeView: React.FC = () => {
       <div className="fridge-view min-h-screen bg-gray-50 p-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h2 className="text-xl font-semibold text-red-800 mb-2">
-              Wystąpił błąd
-            </h2>
+            <h2 className="text-xl font-semibold text-red-800 mb-2">Wystąpił błąd</h2>
             <p className="text-red-600 mb-4">{error}</p>
             <button
               onClick={retry}

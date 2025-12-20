@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { FridgeView } from '@/components/fridge/FridgeView';
-import { DemoModeIndicator } from '@/components/auth/DemoModeIndicator';
+import Layout from "../layouts/Layout.astro";
+import { FridgeView } from "@/components/fridge/FridgeView";
+import { DemoModeIndicator } from "@/components/auth/DemoModeIndicator";
 
 const title = "Moja Lodówka - FridgePick";
 
@@ -11,7 +11,6 @@ const demoEmail = isDemo ? Astro.locals.user?.email : undefined;
 ---
 
 <Layout title={title}>
-    {isDemo && <DemoModeIndicator client:load demoEmail={demoEmail} />}
-    <FridgeView client:load />
+  {isDemo && <DemoModeIndicator client:load demoEmail={demoEmail} />}
+  <FridgeView client:load />
 </Layout>
-

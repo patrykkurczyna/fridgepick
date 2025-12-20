@@ -1,8 +1,8 @@
-import React from 'react';
-import { ProductCard } from './ProductCard';
-import { LoadingSkeleton } from './LoadingSkeleton';
-import { EmptyState } from './EmptyState';
-import type { ProductDTO } from '@/types/fridge';
+import React from "react";
+import { ProductCard } from "./ProductCard";
+import { LoadingSkeleton } from "./LoadingSkeleton";
+import { EmptyState } from "./EmptyState";
+import type { ProductDTO } from "@/types/fridge";
 
 interface ProductsListProps {
   products: ProductDTO[];
@@ -21,7 +21,7 @@ export const ProductsList: React.FC<ProductsListProps> = ({
   loading,
   isSearching = false,
   onEdit,
-  onDelete
+  onDelete,
 }) => {
   // Loading state - only show skeleton on initial load, not during search
   if (loading) {
@@ -38,7 +38,7 @@ export const ProductsList: React.FC<ProductsListProps> = ({
       <EmptyState
         onAddFirst={() => {
           // Navigation to add product will be handled by parent
-          window.location.href = '/fridge/add';
+          window.location.href = "/fridge/add";
         }}
         variant="empty"
       />
@@ -50,16 +50,11 @@ export const ProductsList: React.FC<ProductsListProps> = ({
       className={`
         products-grid grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
         transition-opacity duration-200
-        ${isSearching ? 'opacity-60' : 'opacity-100'}
+        ${isSearching ? "opacity-60" : "opacity-100"}
       `}
     >
       {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        <ProductCard key={product.id} product={product} onEdit={onEdit} onDelete={onDelete} />
       ))}
     </div>
   );

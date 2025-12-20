@@ -1,20 +1,13 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-
-interface DemoModeIndicatorProps {
-  /**
-   * Email użytkownika demo (opcjonalnie)
-   */
-  demoEmail?: string;
-}
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Baner informacyjny dla trybu demo
  * Wyświetlany jako sticky top banner na chronionych stronach
  * Informuje użytkownika o ograniczeniach demo i zachęca do rejestracji
  */
-export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail }) => {
+export const DemoModeIndicator: React.FC = () => {
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -33,9 +26,7 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-yellow-900">
-                Tryb Demo
-              </p>
+              <p className="text-sm font-semibold text-yellow-900">Tryb Demo</p>
               <p className="text-xs text-yellow-800">
                 Twoje dane będą usunięte po 7 dniach. Zarejestruj się, aby zapisać je na stałe.
               </p>
@@ -44,14 +35,8 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
 
           {/* Przyciski akcji */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              asChild
-              size="sm"
-              className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-sm cursor-pointer"
-            >
-              <a href="/auth/register">
-                Zarejestruj się
-              </a>
+            <Button asChild size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-sm cursor-pointer">
+              <a href="/auth/register">Zarejestruj się</a>
             </Button>
 
             <Button
@@ -69,12 +54,7 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
         <div className="hidden lg:block pb-2">
           <div className="flex items-center gap-4 text-xs text-yellow-700">
             <div className="flex items-center gap-1">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -85,12 +65,7 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
               <span>Dane usuwane po 7 dniach</span>
             </div>
             <div className="flex items-center gap-1">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -101,12 +76,7 @@ export const DemoModeIndicator: React.FC<DemoModeIndicatorProps> = ({ demoEmail 
               <span>Pełna funkcjonalność dostępna</span>
             </div>
             <div className="flex items-center gap-1">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

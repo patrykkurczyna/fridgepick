@@ -1,5 +1,5 @@
-import React, { useState, type FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ForgotPasswordFormState {
   email: string;
@@ -13,10 +13,10 @@ interface ForgotPasswordFormState {
  */
 const validateEmail = (email: string): string | null => {
   if (!email) {
-    return 'Email jest wymagany';
+    return "Email jest wymagany";
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return 'Nieprawidłowy format email';
+    return "Nieprawidłowy format email";
   }
   return null;
 };
@@ -27,17 +27,17 @@ const validateEmail = (email: string): string | null => {
  */
 export const ForgotPasswordForm: React.FC = () => {
   const [formState, setFormState] = useState<ForgotPasswordFormState>({
-    email: '',
+    email: "",
     isLoading: false,
     error: null,
-    success: false
+    success: false,
   });
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       email: e.target.value,
-      error: null
+      error: null,
     }));
   };
 
@@ -47,44 +47,43 @@ export const ForgotPasswordForm: React.FC = () => {
     // Walidacja client-side
     const validationError = validateEmail(formState.email);
     if (validationError) {
-      setFormState(prev => ({ ...prev, error: validationError }));
+      setFormState((prev) => ({ ...prev, error: validationError }));
       return;
     }
 
-    setFormState(prev => ({ ...prev, isLoading: true, error: null }));
+    setFormState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       // Call the forgot password API
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formState.email
-        })
+          email: formState.email,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Wysłanie linku nie powiodło się');
+        throw new Error(data.error || "Wysłanie linku nie powiodło się");
       }
 
-      console.log('Password reset email sent:', {
-        email: formState.email
+      console.log("Password reset email sent:", {
+        email: formState.email,
       });
 
       // Show success message
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         isLoading: false,
-        success: true
+        success: true,
       }));
-
     } catch (err) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         isLoading: false,
-        error: err instanceof Error ? err.message : 'Wystąpił nieoczekiwany błąd'
+        error: err instanceof Error ? err.message : "Wystąpił nieoczekiwany błąd",
       }));
     }
   };
@@ -95,12 +94,7 @@ export const ForgotPasswordForm: React.FC = () => {
       <div className="space-y-6">
         <div className="bg-green-50 border border-green-200 rounded-md p-6 text-center">
           <div className="mb-4">
-            <svg
-              className="mx-auto h-12 w-12 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -109,21 +103,17 @@ export const ForgotPasswordForm: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-green-900 mb-2">
-            Link został wysłany!
-          </h3>
+          <h3 className="text-lg font-semibold text-green-900 mb-2">Link został wysłany!</h3>
           <p className="text-sm text-green-800 mb-4">
-            Jeśli konto z adresem <strong>{formState.email}</strong> istnieje w systemie,
-            otrzymasz wiadomość email z linkiem do resetowania hasła.
+            Jeśli konto z adresem <strong>{formState.email}</strong> istnieje w systemie, otrzymasz wiadomość email z
+            linkiem do resetowania hasła.
           </p>
-          <p className="text-xs text-green-700">
-            Sprawdź swoją skrzynkę odbiorczą i folder spam.
-          </p>
+          <p className="text-xs text-green-700">Sprawdź swoją skrzynkę odbiorczą i folder spam.</p>
         </div>
 
         <div className="text-center space-y-2">
           <p className="text-sm text-gray-600">
-            Pamiętasz hasło?{' '}
+            Pamiętasz hasło?{" "}
             <a
               href="/auth/login"
               className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
@@ -142,8 +132,7 @@ export const ForgotPasswordForm: React.FC = () => {
       {/* Informacja */}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
         <p className="text-sm text-blue-800">
-          Podaj adres email przypisany do Twojego konta. Wyślemy Ci link do zresetowania
-          hasła.
+          Podaj adres email przypisany do Twojego konta. Wyślemy Ci link do zresetowania hasła.
         </p>
       </div>
 
@@ -156,10 +145,7 @@ export const ForgotPasswordForm: React.FC = () => {
 
       {/* Email */}
       <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
           Email
         </label>
         <input
@@ -193,14 +179,7 @@ export const ForgotPasswordForm: React.FC = () => {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -210,7 +189,7 @@ export const ForgotPasswordForm: React.FC = () => {
             Wysyłanie...
           </span>
         ) : (
-          'Wyślij link resetujący'
+          "Wyślij link resetujący"
         )}
       </Button>
 

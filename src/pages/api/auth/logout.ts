@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 /**
  * POST /api/auth/logout
@@ -17,15 +17,15 @@ export const POST: APIRoute = async ({ locals }) => {
     const { error } = await locals.supabase.auth.signOut();
 
     if (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Wystąpił błąd podczas wylogowywania',
+          error: "Wystąpił błąd podczas wylogowywania",
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -34,23 +34,23 @@ export const POST: APIRoute = async ({ locals }) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Wylogowano pomyślnie',
+        message: "Wylogowano pomyślnie",
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
-  } catch (error) {
-    console.error('Logout API error:', error);
+  } catch {
+    console.error("Logout API error:", error);
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Wystąpił błąd serwera. Spróbuj ponownie później.',
+        error: "Wystąpił błąd serwera. Spróbuj ponownie później.",
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

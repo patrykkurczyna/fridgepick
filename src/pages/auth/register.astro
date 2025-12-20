@@ -1,13 +1,13 @@
 ---
-import AuthLayout from '../../layouts/AuthLayout.astro';
-import { RegisterForm } from '../../components/auth/RegisterForm';
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import { RegisterForm } from "../../components/auth/RegisterForm";
 
-const title = 'Rejestracja';
+const title = "Rejestracja";
 
 // Check if user is already logged in
 if (Astro.locals.session) {
   // User is already authenticated, redirect to fridge
-  return Astro.redirect('/fridge');
+  return Astro.redirect("/fridge");
 }
 ---
 
@@ -16,11 +16,8 @@ if (Astro.locals.session) {
 
   <div slot="footer">
     <p class="text-gray-500">
-      Wróć do{' '}
-      <a
-        href="/"
-        class="text-emerald-600 hover:text-emerald-500 transition-colors font-medium cursor-pointer"
-      >
+      Wróć do{" "}
+      <a href="/" class="text-emerald-600 hover:text-emerald-500 transition-colors font-medium cursor-pointer">
         strony głównej
       </a>
     </p>

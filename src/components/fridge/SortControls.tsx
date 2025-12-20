@@ -1,7 +1,7 @@
-import React from 'react';
-import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
-import { validateSortOption } from '@/types/fridge';
-import type { SortOption } from '@/types/fridge';
+import React from "react";
+import { ChevronDownIcon, ArrowsUpDownIcon } from "@heroicons/react/24/outline";
+import { validateSortOption } from "@/types/fridge";
+import type { SortOption } from "@/types/fridge";
 
 interface SortControlsProps {
   sortBy: SortOption;
@@ -13,15 +13,11 @@ interface SortControlsProps {
  * Dropdown/select do wyboru opcji sortowania produktów
  * Obsługuje: onChange selection, reset to default (expires_at)
  */
-export const SortControls: React.FC<SortControlsProps> = React.memo(({
-  sortBy,
-  onSortChange,
-  disabled = false
-}) => {
+const SortControlsComponent: React.FC<SortControlsProps> = ({ sortBy, onSortChange, disabled = false }) => {
   const sortOptions = [
-    { value: 'expires_at', label: 'Data ważności', description: 'Od najwcześniej wygasających' },
-    { value: 'name', label: 'Nazwa', description: 'Alfabetycznie A-Z' },
-    { value: 'created_at', label: 'Data dodania', description: 'Od ostatnio dodanych' }
+    { value: "expires_at", label: "Data ważności", description: "Od najwcześniej wygasających" },
+    { value: "name", label: "Nazwa", description: "Alfabetycznie A-Z" },
+    { value: "created_at", label: "Data dodania", description: "Od ostatnio dodanych" },
   ] as const;
 
   /**
@@ -29,11 +25,11 @@ export const SortControls: React.FC<SortControlsProps> = React.memo(({
    */
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    
+
     if (validateSortOption(value)) {
       onSortChange(value);
     } else {
-      console.warn('Invalid sort option:', value);
+      console.warn("Invalid sort option:", value);
     }
   };
 
@@ -41,11 +37,11 @@ export const SortControls: React.FC<SortControlsProps> = React.memo(({
    * Reset to default sort
    */
   const handleReset = () => {
-    onSortChange('expires_at');
+    onSortChange("expires_at");
   };
 
-  const currentOption = sortOptions.find(option => option.value === sortBy);
-  const isDefaultSort = sortBy === 'expires_at';
+  const currentOption = sortOptions.find((option) => option.value === sortBy);
+  const isDefaultSort = sortBy === "expires_at";
 
   return (
     <div className="flex items-center gap-2">
@@ -93,10 +89,12 @@ export const SortControls: React.FC<SortControlsProps> = React.memo(({
 
       {/* Sort description (hidden on mobile) */}
       {currentOption && (
-        <span className="hidden lg:inline text-xs text-gray-500 ml-1">
-          {currentOption.description}
-        </span>
+        <span className="hidden lg:inline text-xs text-gray-500 ml-1">{currentOption.description}</span>
       )}
     </div>
   );
-});
+};
+
+SortControlsComponent.displayName = "SortControls";
+
+export const SortControls = React.memo(SortControlsComponent);

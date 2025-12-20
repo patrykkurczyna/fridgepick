@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { UserCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState, useRef, useEffect } from "react";
+import { UserCircleIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * User menu component with logout functionality
@@ -20,11 +20,11 @@ export const UserMenu: React.FC = () => {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -47,9 +47,7 @@ export const UserMenu: React.FC = () => {
         aria-expanded={isOpen}
       >
         <UserCircleIcon className="w-6 h-6 text-gray-600" />
-        <span className="hidden md:block text-sm font-medium text-gray-700 max-w-[150px] truncate">
-          {user.email}
-        </span>
+        <span className="hidden md:block text-sm font-medium text-gray-700 max-w-[150px] truncate">{user.email}</span>
       </button>
 
       {/* Dropdown menu */}

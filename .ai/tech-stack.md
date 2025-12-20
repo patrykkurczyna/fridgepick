@@ -9,6 +9,15 @@
    - Przykład Tailwind: `className="... cursor-pointer hover:bg-gray-100"`
    - Przykład CSS: `style={{ cursor: 'pointer' }}`
 
+2. **ESLint & Code Quality - KRYTYCZNE**
+   - **ZAWSZE uruchamiaj `npm run lint` PRZED commitowaniem kodu**
+   - **NAPRAW wszystkie błędy lintingu zanim przejdziesz dalej**
+   - Linting ma NAJWYŻSZY priorytet - kod z błędami lintingu nie może być commitowany
+   - Po każdej zmianie w kodzie uruchom: `npm run lint -- --fix` (auto-fix formatowania)
+   - Wszystkie pozostałe błędy (unused vars, any types, etc.) muszą być naprawione ręcznie
+   - Zero tolerancji dla: unused variables, explicit `any` types, empty interfaces
+   - Warningi console.log są dozwolone tylko dla debugowania (usuń przed production)
+
 🔴 KRYTYCZNE PROBLEMY Z OBECNYM STACKIEM
 
 1. Astro 5 to overengineering

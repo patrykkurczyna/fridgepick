@@ -1,7 +1,7 @@
-import React from 'react';
-import { SearchBar } from './SearchBar';
-import { SortControls } from './SortControls';
-import type { SortOption } from '@/types/fridge';
+import React from "react";
+import { SearchBar } from "./SearchBar";
+import { SortControls } from "./SortControls";
+import type { SortOption } from "@/types/fridge";
 
 interface FridgeFiltersProps {
   searchQuery: string;
@@ -16,13 +16,13 @@ interface FridgeFiltersProps {
  * Wrapper component dla wszystkich filtrów i kontrolek wyszukiwania
  * Łączy SearchBar i SortControls w responsywny layout
  */
-export const FridgeFilters: React.FC<FridgeFiltersProps> = React.memo(({
+const FridgeFiltersComponent: React.FC<FridgeFiltersProps> = ({
   searchQuery,
   sortBy,
   onSearch,
   onSortChange,
   onClearSearch,
-  loading = false
+  loading = false,
 }) => {
   const hasActiveSearch = searchQuery.trim().length > 0;
 
@@ -31,20 +31,12 @@ export const FridgeFilters: React.FC<FridgeFiltersProps> = React.memo(({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Search section */}
         <div className="flex-1 lg:max-w-md">
-          <SearchBar
-            query={searchQuery}
-            onSearch={onSearch}
-            placeholder="Szukaj produktów po nazwie..."
-          />
+          <SearchBar query={searchQuery} onSearch={onSearch} placeholder="Szukaj produktów po nazwie..." />
         </div>
 
         {/* Sort and actions section */}
         <div className="flex items-center justify-between gap-4 lg:justify-end">
-          <SortControls
-            sortBy={sortBy}
-            onSortChange={onSortChange}
-            disabled={loading}
-          />
+          <SortControls sortBy={sortBy} onSortChange={onSortChange} disabled={loading} />
 
           {/* Clear search button (mobile friendly) */}
           {hasActiveSearch && (
@@ -66,7 +58,7 @@ export const FridgeFilters: React.FC<FridgeFiltersProps> = React.memo(({
             <span>Aktywne filtry:</span>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium">
-                Wyszukiwanie: "{searchQuery}"
+                Wyszukiwanie: &quot;{searchQuery}&quot;
               </span>
             </div>
           </div>
@@ -74,4 +66,8 @@ export const FridgeFilters: React.FC<FridgeFiltersProps> = React.memo(({
       )}
     </div>
   );
-});
+};
+
+FridgeFiltersComponent.displayName = "FridgeFilters";
+
+export const FridgeFilters = React.memo(FridgeFiltersComponent);

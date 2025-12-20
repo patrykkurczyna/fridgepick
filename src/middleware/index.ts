@@ -1,23 +1,23 @@
-import { defineMiddleware } from 'astro:middleware';
-import { createSupabaseServerInstance } from '../db/supabase.client.ts';
+import { defineMiddleware } from "astro:middleware";
+import { createSupabaseServerInstance } from "../db/supabase.client.ts";
 
 /**
  * Public paths that don't require authentication
  * Users can access these routes without being logged in
  */
 const PUBLIC_PATHS = [
-  '/',                          // Landing page
-  '/auth/login',                // Login page
-  '/auth/register',             // Registration page
-  '/auth/forgot-password',      // Forgot password page
-  '/auth/reset-password',       // Reset password page
-  '/auth/verify-email',         // Email verification page
-  '/api/auth/login',            // Login API endpoint
-  '/api/auth/register',         // Register API endpoint
-  '/api/auth/logout',           // Logout API endpoint
-  '/api/auth/demo',             // Demo mode API endpoint
-  '/api/auth/forgot-password',  // Forgot password API endpoint
-  '/api/auth/reset-password',   // Reset password API endpoint
+  "/", // Landing page
+  "/auth/login", // Login page
+  "/auth/register", // Registration page
+  "/auth/forgot-password", // Forgot password page
+  "/auth/reset-password", // Reset password page
+  "/auth/verify-email", // Email verification page
+  "/api/auth/login", // Login API endpoint
+  "/api/auth/register", // Register API endpoint
+  "/api/auth/logout", // Logout API endpoint
+  "/api/auth/demo", // Demo mode API endpoint
+  "/api/auth/forgot-password", // Forgot password API endpoint
+  "/api/auth/reset-password", // Reset password API endpoint
 ];
 
 /**
@@ -30,7 +30,7 @@ function isPublicPath(pathname: string): boolean {
   }
 
   // Check for demo mode query parameter (allow demo access to /fridge)
-  if (pathname === '/fridge') {
+  if (pathname === "/fridge") {
     return false; // Will be checked later with query params
   }
 
@@ -51,12 +51,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.supabase = supabase;
 
   // Check for auth code in URL (from email links)
-  const code = context.url.searchParams.get('code');
+  const code = context.url.searchParams.get("code");
   if (code) {
     // Exchange code for session (password recovery, magic link, etc.)
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      console.error('Error exchanging code for session:', error);
+      console.error("Error exchanging code for session:", error);
     }
   }
 
@@ -69,14 +69,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // This prevents issues when database is cleaned but cookies remain
   if (session?.user) {
     const { data: userRecord, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', session.user.id)
+      .from("users")
+      .select("id")
+      .eq("id", session.user.id)
       .single();
 
     // If user doesn't exist in public.users, clear invalid session
     if (userError || !userRecord) {
-      console.log('User session exists but user not found in database, clearing session');
+      console.log("User session exists but user not found in database, clearing session");
       await supabase.auth.signOut();
       context.locals.session = null;
       context.locals.user = null;
@@ -98,11 +98,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isPublic = isPublicPath(pathname);
 
   // Special case: Allow demo mode access to /fridge
-  const isDemoMode = pathname === '/fridge' && context.url.searchParams.get('demo') === 'true';
+  const isDemoMode = pathname === "/fridge" && context.url.searchParams.get("demo") === "true";
 
   // Special case: Password recovery flow - allow access to reset-password page
   // This includes when there's a code parameter (from email link)
-  const isPasswordRecovery = pathname === '/auth/reset-password';
+  const isPasswordRecovery = pathname === "/auth/reset-password";
 
   // If path is public, demo mode, or password recovery, allow access
   if (isPublic || isDemoMode || isPasswordRecovery) {

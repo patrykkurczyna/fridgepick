@@ -1,4 +1,4 @@
-import type { QuickAddItem } from '@/types/fridge';
+import type { QuickAddItem } from "@/types/fridge";
 
 /**
  * Predefiniowane popularne produkty do szybkiego dodania
@@ -7,143 +7,143 @@ import type { QuickAddItem } from '@/types/fridge';
 export const QUICK_ADD_PRODUCTS: QuickAddItem[] = [
   // Nabiał
   {
-    name: 'Mleko 2%',
+    name: "Mleko 2%",
     categoryId: 1,
-    categoryName: 'nabiał',
-    defaultUnit: 'l',
+    categoryName: "nabiał",
+    defaultUnit: "l",
     defaultQuantity: 1,
-    icon: '🥛'
+    icon: "🥛",
   },
   {
-    name: 'Masło',
+    name: "Masło",
     categoryId: 1,
-    categoryName: 'nabiał',
-    defaultUnit: 'g',
+    categoryName: "nabiał",
+    defaultUnit: "g",
     defaultQuantity: 200,
-    icon: '🧈'
+    icon: "🧈",
   },
   {
-    name: 'Ser żółty',
+    name: "Ser żółty",
     categoryId: 1,
-    categoryName: 'nabiał',
-    defaultUnit: 'g',
+    categoryName: "nabiał",
+    defaultUnit: "g",
     defaultQuantity: 300,
-    icon: '🧀'
+    icon: "🧀",
   },
   {
-    name: 'Jogurt naturalny',
+    name: "Jogurt naturalny",
     categoryId: 1,
-    categoryName: 'nabiał',
-    defaultUnit: 'g',
+    categoryName: "nabiał",
+    defaultUnit: "g",
     defaultQuantity: 400,
-    icon: '🍶'
+    icon: "🍶",
   },
 
   // Mięso
   {
-    name: 'Pierś z kurczaka',
+    name: "Pierś z kurczaka",
     categoryId: 2,
-    categoryName: 'mięso',
-    defaultUnit: 'g',
+    categoryName: "mięso",
+    defaultUnit: "g",
     defaultQuantity: 500,
-    icon: '🍗'
+    icon: "🍗",
   },
   {
-    name: 'Mięso mielone',
+    name: "Mięso mielone",
     categoryId: 2,
-    categoryName: 'mięso',
-    defaultUnit: 'g',
+    categoryName: "mięso",
+    defaultUnit: "g",
     defaultQuantity: 500,
-    icon: '🥩'
+    icon: "🥩",
   },
 
   // Pieczywo
   {
-    name: 'Chleb pełnoziarnisty',
+    name: "Chleb pełnoziarnisty",
     categoryId: 3,
-    categoryName: 'pieczywo',
-    defaultUnit: 'szt',
+    categoryName: "pieczywo",
+    defaultUnit: "szt",
     defaultQuantity: 1,
-    icon: '🍞'
+    icon: "🍞",
   },
   {
-    name: 'Bułki',
+    name: "Bułki",
     categoryId: 3,
-    categoryName: 'pieczywo',
-    defaultUnit: 'szt',
+    categoryName: "pieczywo",
+    defaultUnit: "szt",
     defaultQuantity: 6,
-    icon: '🥖'
+    icon: "🥖",
   },
 
   // Warzywa
   {
-    name: 'Pomidory',
+    name: "Pomidory",
     categoryId: 4,
-    categoryName: 'warzywa',
-    defaultUnit: 'g',
+    categoryName: "warzywa",
+    defaultUnit: "g",
     defaultQuantity: 500,
-    icon: '🍅'
+    icon: "🍅",
   },
   {
-    name: 'Cebula',
+    name: "Cebula",
     categoryId: 4,
-    categoryName: 'warzywa',
-    defaultUnit: 'g',
+    categoryName: "warzywa",
+    defaultUnit: "g",
     defaultQuantity: 300,
-    icon: '🧅'
+    icon: "🧅",
   },
   {
-    name: 'Marchew',
+    name: "Marchew",
     categoryId: 4,
-    categoryName: 'warzywa',
-    defaultUnit: 'g',
+    categoryName: "warzywa",
+    defaultUnit: "g",
     defaultQuantity: 500,
-    icon: '🥕'
+    icon: "🥕",
   },
   {
-    name: 'Ziemniaki',
+    name: "Ziemniaki",
     categoryId: 4,
-    categoryName: 'warzywa',
-    defaultUnit: 'g',
+    categoryName: "warzywa",
+    defaultUnit: "g",
     defaultQuantity: 1000,
-    icon: '🥔'
+    icon: "🥔",
   },
 
   // Owoce
   {
-    name: 'Banany',
+    name: "Banany",
     categoryId: 5,
-    categoryName: 'owoce',
-    defaultUnit: 'szt',
+    categoryName: "owoce",
+    defaultUnit: "szt",
     defaultQuantity: 6,
-    icon: '🍌'
+    icon: "🍌",
   },
   {
-    name: 'Jabłka',
+    name: "Jabłka",
     categoryId: 5,
-    categoryName: 'owoce',
-    defaultUnit: 'szt',
+    categoryName: "owoce",
+    defaultUnit: "szt",
     defaultQuantity: 6,
-    icon: '🍎'
+    icon: "🍎",
   },
 
   // Dodatkowe popularne produkty
   {
-    name: 'Jajka',
+    name: "Jajka",
     categoryId: 1,
-    categoryName: 'nabiał',
-    defaultUnit: 'szt',
+    categoryName: "nabiał",
+    defaultUnit: "szt",
     defaultQuantity: 12,
-    icon: '🥚'
+    icon: "🥚",
   },
   {
-    name: 'Ryż',
+    name: "Ryż",
     categoryId: 4, // Można stworzyć osobną kategorię "suche produkty"
-    categoryName: 'warzywa',
-    defaultUnit: 'g',
+    categoryName: "warzywa",
+    defaultUnit: "g",
     defaultQuantity: 500,
-    icon: '🍚'
-  }
+    icon: "🍚",
+  },
 ];
 
 /**
@@ -153,8 +153,8 @@ export const getQuickAddProductsByCategory = (categoryId?: number): QuickAddItem
   if (!categoryId) {
     return QUICK_ADD_PRODUCTS;
   }
-  
-  return QUICK_ADD_PRODUCTS.filter(product => product.categoryId === categoryId);
+
+  return QUICK_ADD_PRODUCTS.filter((product) => product.categoryId === categoryId);
 };
 
 /**

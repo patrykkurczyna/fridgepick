@@ -1,6 +1,6 @@
-import { createServerClient, createBrowserClient } from '@supabase/ssr';
-import type { Database } from '../db/database.types.ts';
-import type { AstroCookies } from 'astro';
+import { createServerClient, createBrowserClient } from "@supabase/ssr";
+import type { Database } from "../db/database.types.ts";
+import type { AstroCookies } from "astro";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
@@ -8,16 +8,19 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_KEY || import.meta.env.S
 /**
  * Parse cookies from a Cookie header string
  */
-function parseCookieHeader(cookieHeader: string | null): Array<{ name: string; value: string }> {
+function parseCookieHeader(cookieHeader: string | null): { name: string; value: string }[] {
   if (!cookieHeader) return [];
 
-  return cookieHeader.split(';').map(cookie => {
-    const [name, ...rest] = cookie.trim().split('=');
-    return {
-      name: name.trim(),
-      value: rest.join('=').trim()
-    };
-  }).filter(cookie => cookie.name && cookie.value);
+  return cookieHeader
+    .split(";")
+    .map((cookie) => {
+      const [name, ...rest] = cookie.trim().split("=");
+      return {
+        name: name.trim(),
+        value: rest.join("=").trim(),
+      };
+    })
+    .filter((cookie) => cookie.name && cookie.value);
 }
 
 /**
@@ -33,7 +36,7 @@ export function createSupabaseServerInstance(request: Request, cookies: AstroCoo
     cookies: {
       getAll() {
         // Parse cookies from request headers since AstroCookies doesn't have getAll()
-        const cookieHeader = request.headers.get('cookie');
+        const cookieHeader = request.headers.get("cookie");
         return parseCookieHeader(cookieHeader);
       },
       setAll(cookiesToSet) {

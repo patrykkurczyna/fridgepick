@@ -1,6 +1,6 @@
-import React from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { validatePaginationParams } from '@/types/fridge';
+import React from "react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { validatePaginationParams } from "@/types/fridge";
 
 interface PaginationProps {
   currentPage: number;
@@ -19,11 +19,11 @@ export const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   totalItems,
   onPageChange,
-  showInfo = true
+  showInfo = true,
 }) => {
   // Validate pagination parameters
   const { isValid, normalizedPage } = validatePaginationParams(currentPage, totalPages);
-  
+
   if (!isValid && currentPage !== normalizedPage) {
     onPageChange(normalizedPage);
     return null;
@@ -62,13 +62,13 @@ export const Pagination: React.FC<PaginationProps> = ({
     let prev = 0;
     for (const page of uniqueRange) {
       if (page - prev > 1) {
-        rangeWithDots.push('...');
+        rangeWithDots.push("...");
       }
       rangeWithDots.push(page);
       prev = page;
     }
 
-    return rangeWithDots.filter(p => typeof p === 'number') as number[];
+    return rangeWithDots.filter((p) => typeof p === "number") as number[];
   };
 
   const visiblePages = getVisiblePages();
@@ -110,8 +110,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       {/* Items info */}
       {showInfo && (
         <div className="text-sm text-gray-700">
-          Pokazano <span className="font-medium">{startItem}</span> do{' '}
-          <span className="font-medium">{endItem}</span> z{' '}
+          Pokazano <span className="font-medium">{startItem}</span> do <span className="font-medium">{endItem}</span> z{" "}
           <span className="font-medium">{totalItems}</span> produktów
         </div>
       )}
@@ -124,9 +123,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={isFirstPage}
           className={`
             relative inline-flex items-center px-2 py-2 rounded-l-lg text-sm font-medium
-            ${isFirstPage
-              ? 'text-gray-300 cursor-not-allowed'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer'
+            ${
+              isFirstPage
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer"
             }
           `}
           aria-label="Poprzednia strona"
@@ -142,9 +142,8 @@ export const Pagination: React.FC<PaginationProps> = ({
               onClick={() => handlePageChange(page)}
               className={`
                 relative inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer
-                ${page === currentPage
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                ${
+                  page === currentPage ? "bg-blue-600 text-white" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
                 }
               `}
             >
@@ -164,9 +163,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={isLastPage}
           className={`
             relative inline-flex items-center px-2 py-2 rounded-r-lg text-sm font-medium
-            ${isLastPage
-              ? 'text-gray-300 cursor-not-allowed'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer'
+            ${
+              isLastPage
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50 cursor-pointer"
             }
           `}
           aria-label="Następna strona"
@@ -187,7 +187,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             const page = parseInt(e.target.value);
             if (page && page >= 1 && page <= totalPages) {
               handlePageChange(page);
-              e.target.value = '';
+              e.target.value = "";
             }
           }}
           placeholder={currentPage.toString()}

@@ -1,7 +1,7 @@
 /// <reference types="astro/client" />
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from './db/database.types.ts';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./db/database.types.ts";
 
 declare global {
   namespace App {
@@ -16,13 +16,13 @@ declare global {
        * Current user session (populated by middleware)
        * null if user is not authenticated
        */
-      session: import('@supabase/supabase-js').Session | null;
+      session: import("@supabase/supabase-js").Session | null;
 
       /**
        * Current authenticated user (populated by middleware)
        * null if user is not authenticated
        */
-      user: import('@supabase/supabase-js').User | null;
+      user: import("@supabase/supabase-js").User | null;
     }
   }
 }

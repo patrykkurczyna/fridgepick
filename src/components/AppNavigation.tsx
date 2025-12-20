@@ -1,35 +1,31 @@
-import React from 'react';
-import { Logo } from './Logo';
+import React from "react";
+import { Logo } from "./Logo";
 
 interface AppNavigationProps {
   /** Optional children to render in the navigation (e.g., user menu, actions) */
   children?: React.ReactNode;
   /** Current active page for highlighting */
-  currentPage?: 'home' | 'fridge' | 'recipes' | 'meal-plan';
+  currentPage?: "home" | "fridge" | "recipes" | "meal-plan";
   /** Variant for different background colors */
-  variant?: 'light' | 'dark';
+  variant?: "light" | "dark";
 }
 
 /**
  * Main application navigation with logo
  * Can be used as a consistent header across all pages
  */
-export const AppNavigation: React.FC<AppNavigationProps> = ({
-  children,
-  currentPage,
-  variant = 'light'
-}) => {
+export const AppNavigation: React.FC<AppNavigationProps> = ({ children, currentPage, variant = "light" }) => {
   const navLinks = [
-    { href: '/fridge', label: 'Lodówka', page: 'fridge' as const },
-    { href: '/recipes', label: 'Przepisy', page: 'recipes' as const },
-    { href: '/meal-plan', label: 'Plan', page: 'meal-plan' as const },
+    { href: "/fridge", label: "Lodówka", page: "fridge" as const },
+    { href: "/recipes", label: "Przepisy", page: "recipes" as const },
+    { href: "/meal-plan", label: "Plan", page: "meal-plan" as const },
   ];
 
-  const bgClass = variant === 'dark' ? 'bg-gray-900' : 'bg-white';
-  const borderClass = variant === 'dark' ? 'border-gray-800' : 'border-gray-200';
-  const textClass = variant === 'dark' ? 'text-gray-300' : 'text-gray-600';
-  const hoverClass = variant === 'dark' ? 'hover:text-white' : 'hover:text-gray-900';
-  const activeClass = variant === 'dark' ? 'text-white border-emerald-500' : 'text-gray-900 border-emerald-500';
+  const bgClass = variant === "dark" ? "bg-gray-900" : "bg-white";
+  const borderClass = variant === "dark" ? "border-gray-800" : "border-gray-200";
+  const textClass = variant === "dark" ? "text-gray-300" : "text-gray-600";
+  const hoverClass = variant === "dark" ? "hover:text-white" : "hover:text-gray-900";
+  const activeClass = variant === "dark" ? "text-white border-emerald-500" : "text-gray-900 border-emerald-500";
 
   return (
     <nav className={`${bgClass} shadow-sm border-b ${borderClass}`}>
@@ -61,11 +57,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
           </div>
 
           {/* Additional content (user menu, actions, etc.) */}
-          {children && (
-            <div className="flex items-center space-x-4">
-              {children}
-            </div>
-          )}
+          {children && <div className="flex items-center space-x-4">{children}</div>}
         </div>
 
         {/* Mobile Navigation - Bottom tabs style */}
@@ -77,7 +69,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                 href={link.href}
                 className={`
                   text-xs font-medium transition-colors px-3 py-2 rounded-md cursor-pointer
-                  ${currentPage === link.page ? 'bg-emerald-50 text-emerald-700' : `${textClass} ${hoverClass}`}
+                  ${currentPage === link.page ? "bg-emerald-50 text-emerald-700" : `${textClass} ${hoverClass}`}
                 `}
               >
                 {link.label}

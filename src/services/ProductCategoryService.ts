@@ -1,6 +1,6 @@
-import type { ProductCategoryDTO, DatabaseTables } from '../types';
-import type { IProductCategoryRepository } from '../repositories/ProductCategoryRepository';
-import { DatabaseError } from '../repositories/ProductCategoryRepository';
+import type { ProductCategoryDTO, DatabaseTables } from "../types";
+import type { IProductCategoryRepository } from "../repositories/ProductCategoryRepository";
+import { DatabaseError } from "../repositories/ProductCategoryRepository";
 
 /**
  * Fallback categories for graceful degradation when database is unavailable
@@ -11,7 +11,7 @@ const FALLBACK_CATEGORIES: ProductCategoryDTO[] = [
   { id: 2, name: "mięso", description: "Mięso i produkty mięsne" },
   { id: 3, name: "pieczywo", description: "Pieczywo i wypieki" },
   { id: 4, name: "warzywa", description: "Warzywa świeże i przetworzone" },
-  { id: 5, name: "owoce", description: "Owoce świeże i suszone" }
+  { id: 5, name: "owoce", description: "Owoce świeże i suszone" },
 ];
 
 /**
@@ -39,7 +39,7 @@ export class ProductCategoryService implements IProductCategoryService {
     this.cache = {
       data: null,
       timestamp: 0,
-      ttl: cacheTtlMs
+      ttl: cacheTtlMs,
     };
   }
 
@@ -47,52 +47,51 @@ export class ProductCategoryService implements IProductCategoryService {
    * Retrieves all product categories with caching and fallback support
    * Implements in-memory cache with TTL for performance optimization
    * Falls back to static data if database is unavailable
-   * 
+   *
    * @returns Promise<ProductCategoryDTO[]> Array of product category DTOs
    */
   async getAllCategories(): Promise<ProductCategoryDTO[]> {
-    console.info('ProductCategoryService: getAllCategories called');
+    console.info("ProductCategoryService: getAllCategories called");
 
     // Check cache first
     if (this.isCacheValid()) {
-      console.debug('ProductCategoryService: Returning cached data', {
+      console.debug("ProductCategoryService: Returning cached data", {
         cacheAge: Date.now() - this.cache.timestamp,
-        itemCount: this.cache.data?.length || 0
+        itemCount: this.cache.data?.length || 0,
       });
-      return this.cache.data!;
+      return this.cache.data || [];
     }
 
-    console.debug('ProductCategoryService: Cache miss or expired, fetching from database');
+    console.debug("ProductCategoryService: Cache miss or expired, fetching from database");
 
     try {
       const startTime = Date.now();
-      
+
       // Fetch from database via repository
       const dbRows = await this.repository.findAll();
-      
+
       // Transform database rows to DTOs
       const categories = dbRows.map(this.mapToDTO);
-      
+
       // Update cache
       this.updateCache(categories);
-      
+
       const responseTime = Date.now() - startTime;
-      
-      console.info('ProductCategoryService: Successfully retrieved categories from database', {
+
+      console.info("ProductCategoryService: Successfully retrieved categories from database", {
         responseTime: `${responseTime}ms`,
-        categoryCount: categories.length
+        categoryCount: categories.length,
       });
 
       return categories;
-
-    } catch (error) {
-      console.error('ProductCategoryService: Database error, falling back to static data', {
+    } catch {
+      console.error("ProductCategoryService: Database error, falling back to static data", {
         error: error instanceof Error ? error.message : String(error),
-        errorType: error instanceof DatabaseError ? 'DatabaseError' : 'UnknownError'
+        errorType: error instanceof DatabaseError ? "DatabaseError" : "UnknownError",
       });
 
       // Return fallback data for graceful degradation
-      console.warn('ProductCategoryService: Using fallback categories due to database error');
+      console.warn("ProductCategoryService: Using fallback categories due to database error");
       return FALLBACK_CATEGORIES;
     }
   }
@@ -100,21 +99,21 @@ export class ProductCategoryService implements IProductCategoryService {
   /**
    * Maps database row to DTO format
    * Handles data transformation from database schema to API response format
-   * 
+   *
    * @param row Database row from product_categories table
    * @returns ProductCategoryDTO Transformed DTO object
    */
-  private mapToDTO(row: DatabaseTables['product_categories']['Row']): ProductCategoryDTO {
+  private mapToDTO(row: DatabaseTables["product_categories"]["Row"]): ProductCategoryDTO {
     return {
       id: row.id,
       name: row.name,
-      description: row.description
+      description: row.description,
     };
   }
 
   /**
    * Checks if current cache is still valid based on TTL
-   * 
+   *
    * @returns boolean True if cache is valid, false otherwise
    */
   private isCacheValid(): boolean {
@@ -128,16 +127,16 @@ export class ProductCategoryService implements IProductCategoryService {
 
   /**
    * Updates the in-memory cache with new data
-   * 
+   *
    * @param data Product categories data to cache
    */
   private updateCache(data: ProductCategoryDTO[]): void {
     this.cache.data = data;
     this.cache.timestamp = Date.now();
-    
-    console.debug('ProductCategoryService: Cache updated', {
+
+    console.debug("ProductCategoryService: Cache updated", {
       itemCount: data.length,
-      ttlMs: this.cache.ttl
+      ttlMs: this.cache.ttl,
     });
   }
 
@@ -148,13 +147,13 @@ export class ProductCategoryService implements IProductCategoryService {
   public clearCache(): void {
     this.cache.data = null;
     this.cache.timestamp = 0;
-    
-    console.debug('ProductCategoryService: Cache cleared manually');
+
+    console.debug("ProductCategoryService: Cache cleared manually");
   }
 
   /**
    * Gets cache statistics for monitoring purposes
-   * 
+   *
    * @returns Cache statistics object
    */
   public getCacheStats(): {
@@ -169,7 +168,7 @@ export class ProductCategoryService implements IProductCategoryService {
       age: this.cache.data ? Date.now() - this.cache.timestamp : 0,
       ttl: this.cache.ttl,
       isValid: this.isCacheValid(),
-      itemCount: this.cache.data?.length || 0
+      itemCount: this.cache.data?.length || 0,
     };
   }
 }

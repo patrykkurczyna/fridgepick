@@ -1,4 +1,4 @@
-import type { ApiErrorResponse } from '../types';
+import type { ApiErrorResponse } from "../types";
 
 /**
  * HTTP status codes enum for better type safety
@@ -16,22 +16,22 @@ export enum HttpStatus {
   TOO_MANY_REQUESTS = 429,
   INTERNAL_SERVER_ERROR = 500,
   SERVICE_UNAVAILABLE = 503,
-  GATEWAY_TIMEOUT = 504
+  GATEWAY_TIMEOUT = 504,
 }
 
 /**
  * Error codes for consistent error handling
  */
 export enum ErrorCode {
-  DATABASE_ERROR = 'DATABASE_ERROR',
-  DATABASE_UNAVAILABLE = 'DATABASE_UNAVAILABLE',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  NOT_FOUND = 'NOT_FOUND',
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
-  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
-  TIMEOUT_ERROR = 'TIMEOUT_ERROR'
+  DATABASE_ERROR = "DATABASE_ERROR",
+  DATABASE_UNAVAILABLE = "DATABASE_UNAVAILABLE",
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  UNAUTHORIZED = "UNAUTHORIZED",
+  NOT_FOUND = "NOT_FOUND",
+  RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED",
+  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
+  SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
+  TIMEOUT_ERROR = "TIMEOUT_ERROR",
 }
 
 /**
@@ -42,10 +42,10 @@ export class ApiError extends Error {
     public readonly statusCode: HttpStatus,
     public readonly code: ErrorCode,
     message: string,
-    public readonly details?: Record<string, any>
+    public readonly details?: Record<string, unknown>
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 
   /**
@@ -59,8 +59,8 @@ export class ApiError extends Error {
       details: {
         ...this.details,
         timestamp: new Date().toISOString(),
-        ...(requestId && { requestId })
-      }
+        ...(requestId && { requestId }),
+      },
     };
   }
 }
@@ -130,35 +130,39 @@ export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
   maxRequests: 1000, // 1000 requests per hour
   keyGenerator: (request) => {
     // Use X-Forwarded-For header or fallback to a default
-    const forwarded = request.headers.get('x-forwarded-for');
-    const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
     return `rate_limit:${ip}`;
-  }
+  },
 };
 
 /**
  * Rate limiting middleware function
  */
 export function checkRateLimit(
-  request: Request, 
+  request: Request,
   config: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG
 ): { allowed: boolean; headers: Record<string, string>; remaining?: number } {
-  const key = config.keyGenerator ? config.keyGenerator(request) : DEFAULT_RATE_LIMIT_CONFIG.keyGenerator!(request);
+  const key = config.keyGenerator
+    ? config.keyGenerator(request)
+    : DEFAULT_RATE_LIMIT_CONFIG.keyGenerator
+      ? DEFAULT_RATE_LIMIT_CONFIG.keyGenerator(request)
+      : "";
   const result = rateLimiter.increment(key, config.windowMs);
-  
+
   const remaining = Math.max(0, config.maxRequests - result.count);
   const resetTime = Math.ceil(result.resetTime / 1000);
-  
+
   const headers = {
-    'X-RateLimit-Limit': config.maxRequests.toString(),
-    'X-RateLimit-Remaining': remaining.toString(),
-    'X-RateLimit-Reset': resetTime.toString()
+    "X-RateLimit-Limit": config.maxRequests.toString(),
+    "X-RateLimit-Remaining": remaining.toString(),
+    "X-RateLimit-Reset": resetTime.toString(),
   };
 
   return {
     allowed: result.count <= config.maxRequests,
     headers,
-    remaining
+    remaining,
   };
 }
 
@@ -166,7 +170,7 @@ export function checkRateLimit(
  * ETag validation helper
  */
 export function checkETag(request: Request, currentETag: string): boolean {
-  const ifNoneMatch = request.headers.get('if-none-match');
+  const ifNoneMatch = request.headers.get("if-none-match");
   return ifNoneMatch === `"${currentETag}"`;
 }
 
@@ -174,17 +178,13 @@ export function checkETag(request: Request, currentETag: string): boolean {
  * Request timeout wrapper
  */
 export async function withTimeout<T>(
-  promise: Promise<T>, 
+  promise: Promise<T>,
   timeoutMs: number,
-  timeoutMessage = 'Request timeout'
+  timeoutMessage = "Request timeout"
 ): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => {
-      reject(new ApiError(
-        HttpStatus.GATEWAY_TIMEOUT,
-        ErrorCode.TIMEOUT_ERROR,
-        timeoutMessage
-      ));
+      reject(new ApiError(HttpStatus.GATEWAY_TIMEOUT, ErrorCode.TIMEOUT_ERROR, timeoutMessage));
     }, timeoutMs);
   });
 
@@ -197,7 +197,7 @@ export async function withTimeout<T>(
 export function createErrorResponse(
   error: unknown,
   requestId?: string,
-  defaultMessage = 'An unexpected error occurred'
+  defaultMessage = "An unexpected error occurred"
 ): Response {
   let apiError: ApiError;
 
@@ -210,21 +210,14 @@ export function createErrorResponse(
       error.message || defaultMessage
     );
   } else {
-    apiError = new ApiError(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      ErrorCode.INTERNAL_SERVER_ERROR,
-      defaultMessage
-    );
+    apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_SERVER_ERROR, defaultMessage);
   }
 
-  return new Response(
-    JSON.stringify(apiError.toResponse(requestId)),
-    {
-      status: apiError.statusCode,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
-      }
-    }
-  );
+  return new Response(JSON.stringify(apiError.toResponse(requestId)), {
+    status: apiError.statusCode,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+    },
+  });
 }

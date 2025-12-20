@@ -1,6 +1,6 @@
-import React, { useState, type FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { createSupabaseClientInstance } from '@/db/supabase.client';
+import React, { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { createSupabaseClientInstance } from "@/db/supabase.client";
 
 interface ResetPasswordFormState {
   newPassword: string;
@@ -15,13 +15,13 @@ interface ResetPasswordFormState {
  */
 const validatePassword = (password: string): string | null => {
   if (!password) {
-    return 'Hasło jest wymagane';
+    return "Hasło jest wymagane";
   }
   if (password.length < 8) {
-    return 'Hasło musi mieć minimum 8 znaków';
+    return "Hasło musi mieć minimum 8 znaków";
   }
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-    return 'Hasło musi zawierać małe i wielkie litery oraz cyfrę';
+    return "Hasło musi zawierać małe i wielkie litery oraz cyfrę";
   }
   return null;
 };
@@ -29,13 +29,15 @@ const validatePassword = (password: string): string | null => {
 /**
  * Sprawdza siłę hasła i zwraca wskaźnik
  */
-const getPasswordStrength = (password: string): {
-  strength: 'weak' | 'medium' | 'strong';
+const getPasswordStrength = (
+  password: string
+): {
+  strength: "weak" | "medium" | "strong";
   label: string;
   color: string;
 } => {
   if (password.length < 8) {
-    return { strength: 'weak', label: 'Słabe', color: 'bg-red-500' };
+    return { strength: "weak", label: "Słabe", color: "bg-red-500" };
   }
 
   const hasLower = /[a-z]/.test(password);
@@ -46,12 +48,12 @@ const getPasswordStrength = (password: string): {
   const criteriaCount = [hasLower, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
 
   if (criteriaCount >= 4 && password.length >= 12) {
-    return { strength: 'strong', label: 'Silne', color: 'bg-green-500' };
+    return { strength: "strong", label: "Silne", color: "bg-green-500" };
   }
   if (criteriaCount >= 3 && password.length >= 8) {
-    return { strength: 'medium', label: 'Średnie', color: 'bg-yellow-500' };
+    return { strength: "medium", label: "Średnie", color: "bg-yellow-500" };
   }
-  return { strength: 'weak', label: 'Słabe', color: 'bg-red-500' };
+  return { strength: "weak", label: "Słabe", color: "bg-red-500" };
 };
 
 /**
@@ -61,24 +63,20 @@ const getPasswordStrength = (password: string): {
  */
 export const ResetPasswordForm: React.FC = () => {
   const [formState, setFormState] = useState<ResetPasswordFormState>({
-    newPassword: '',
-    confirmPassword: '',
+    newPassword: "",
+    confirmPassword: "",
     isLoading: false,
     error: null,
-    success: false
+    success: false,
   });
 
-  const passwordStrength = formState.newPassword
-    ? getPasswordStrength(formState.newPassword)
-    : null;
+  const passwordStrength = formState.newPassword ? getPasswordStrength(formState.newPassword) : null;
 
-  const handleInputChange = (field: 'newPassword' | 'confirmPassword') => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormState(prev => ({
+  const handleInputChange = (field: "newPassword" | "confirmPassword") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormState((prev) => ({
       ...prev,
       [field]: e.target.value,
-      error: null
+      error: null,
     }));
   };
 
@@ -88,41 +86,41 @@ export const ResetPasswordForm: React.FC = () => {
     // Walidacja client-side
     const passwordError = validatePassword(formState.newPassword);
     if (passwordError) {
-      setFormState(prev => ({ ...prev, error: passwordError }));
+      setFormState((prev) => ({ ...prev, error: passwordError }));
       return;
     }
 
     if (formState.newPassword !== formState.confirmPassword) {
-      setFormState(prev => ({ ...prev, error: 'Hasła muszą być identyczne' }));
+      setFormState((prev) => ({ ...prev, error: "Hasła muszą być identyczne" }));
       return;
     }
 
-    setFormState(prev => ({ ...prev, isLoading: true, error: null }));
+    setFormState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       // Call the reset password API
       // Note: Supabase automatically validates the token from the session
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          password: formState.newPassword
-        })
+          password: formState.newPassword,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Resetowanie hasła nie powiodło się');
+        throw new Error(data.error || "Resetowanie hasła nie powiodło się");
       }
 
-      console.log('Password reset successful');
+      console.log("Password reset successful");
 
       // Show success message
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         isLoading: false,
-        success: true
+        success: true,
       }));
 
       // Logout user (clear recovery session) and redirect to login after 2 seconds
@@ -133,20 +131,19 @@ export const ResetPasswordForm: React.FC = () => {
           await supabase.auth.signOut();
 
           // Also call the logout API to clear server-side cookies
-          await fetch('/api/auth/logout', { method: 'POST' });
+          await fetch("/api/auth/logout", { method: "POST" });
         } catch (e) {
-          console.error('Logout error:', e);
+          console.error("Logout error:", e);
         }
 
         // Force redirect to login page with logged_out param
-        window.location.href = '/auth/login?logged_out=true';
+        window.location.href = "/auth/login?logged_out=true";
       }, 2000);
-
     } catch (err) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         isLoading: false,
-        error: err instanceof Error ? err.message : 'Wystąpił nieoczekiwany błąd'
+        error: err instanceof Error ? err.message : "Wystąpił nieoczekiwany błąd",
       }));
     }
   };
@@ -157,12 +154,7 @@ export const ResetPasswordForm: React.FC = () => {
       <div className="space-y-6">
         <div className="bg-green-50 border border-green-200 rounded-md p-6 text-center">
           <div className="mb-4">
-            <svg
-              className="mx-auto h-12 w-12 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -171,23 +163,15 @@ export const ResetPasswordForm: React.FC = () => {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-green-900 mb-2">
-            Hasło zostało zmienione!
-          </h3>
+          <h3 className="text-lg font-semibold text-green-900 mb-2">Hasło zostało zmienione!</h3>
           <p className="text-sm text-green-800 mb-4">
             Twoje hasło zostało pomyślnie zaktualizowane. Za chwilę zostaniesz przekierowany na stronę logowania.
           </p>
-          <p className="text-xs text-green-700">
-            Zaloguj się używając nowego hasła.
-          </p>
+          <p className="text-xs text-green-700">Zaloguj się używając nowego hasła.</p>
         </div>
 
         <div className="text-center">
-          <Button
-            asChild
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
-            size="lg"
-          >
+          <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer" size="lg">
             <a href="/auth/login">Przejdź do logowania</a>
           </Button>
         </div>
@@ -207,10 +191,7 @@ export const ResetPasswordForm: React.FC = () => {
 
       {/* Nowe hasło */}
       <div>
-        <label
-          htmlFor="newPassword"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
           Nowe hasło
         </label>
         <input
@@ -219,7 +200,7 @@ export const ResetPasswordForm: React.FC = () => {
           autoComplete="new-password"
           required
           value={formState.newPassword}
-          onChange={handleInputChange('newPassword')}
+          onChange={handleInputChange("newPassword")}
           disabled={formState.isLoading}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400
                      focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
@@ -233,20 +214,18 @@ export const ResetPasswordForm: React.FC = () => {
           <div className="mt-2">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-gray-600">Siła hasła:</span>
-              <span className="text-xs font-medium text-gray-700">
-                {passwordStrength.label}
-              </span>
+              <span className="text-xs font-medium text-gray-700">{passwordStrength.label}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
                 className={`h-1.5 rounded-full transition-all ${passwordStrength.color}`}
                 style={{
                   width:
-                    passwordStrength.strength === 'weak'
-                      ? '33%'
-                      : passwordStrength.strength === 'medium'
-                      ? '66%'
-                      : '100%'
+                    passwordStrength.strength === "weak"
+                      ? "33%"
+                      : passwordStrength.strength === "medium"
+                        ? "66%"
+                        : "100%",
                 }}
               ></div>
             </div>
@@ -257,28 +236,17 @@ export const ResetPasswordForm: React.FC = () => {
         <div className="mt-2 text-xs text-gray-600 space-y-1">
           <p>Hasło musi zawierać:</p>
           <ul className="list-disc list-inside space-y-0.5 ml-2">
-            <li className={formState.newPassword.length >= 8 ? 'text-green-600' : ''}>
-              Minimum 8 znaków
-            </li>
-            <li className={/[a-z]/.test(formState.newPassword) ? 'text-green-600' : ''}>
-              Małą literę
-            </li>
-            <li className={/[A-Z]/.test(formState.newPassword) ? 'text-green-600' : ''}>
-              Wielką literę
-            </li>
-            <li className={/\d/.test(formState.newPassword) ? 'text-green-600' : ''}>
-              Cyfrę
-            </li>
+            <li className={formState.newPassword.length >= 8 ? "text-green-600" : ""}>Minimum 8 znaków</li>
+            <li className={/[a-z]/.test(formState.newPassword) ? "text-green-600" : ""}>Małą literę</li>
+            <li className={/[A-Z]/.test(formState.newPassword) ? "text-green-600" : ""}>Wielką literę</li>
+            <li className={/\d/.test(formState.newPassword) ? "text-green-600" : ""}>Cyfrę</li>
           </ul>
         </div>
       </div>
 
       {/* Potwierdzenie hasła */}
       <div>
-        <label
-          htmlFor="confirmPassword"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
           Potwierdź nowe hasło
         </label>
         <input
@@ -287,7 +255,7 @@ export const ResetPasswordForm: React.FC = () => {
           autoComplete="new-password"
           required
           value={formState.confirmPassword}
-          onChange={handleInputChange('confirmPassword')}
+          onChange={handleInputChange("confirmPassword")}
           disabled={formState.isLoading}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400
                      focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
@@ -295,10 +263,9 @@ export const ResetPasswordForm: React.FC = () => {
                      transition-colors"
           placeholder="••••••••"
         />
-        {formState.confirmPassword &&
-          formState.newPassword !== formState.confirmPassword && (
-            <p className="mt-1 text-xs text-red-600">Hasła nie są identyczne</p>
-          )}
+        {formState.confirmPassword && formState.newPassword !== formState.confirmPassword && (
+          <p className="mt-1 text-xs text-red-600">Hasła nie są identyczne</p>
+        )}
       </div>
 
       {/* Przycisk resetowania */}
@@ -316,14 +283,7 @@ export const ResetPasswordForm: React.FC = () => {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -333,7 +293,7 @@ export const ResetPasswordForm: React.FC = () => {
             Resetowanie...
           </span>
         ) : (
-          'Ustaw nowe hasło'
+          "Ustaw nowe hasło"
         )}
       </Button>
     </form>

@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { validateSearchQuery } from '@/types/fridge';
+import React, { useRef } from "react";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { validateSearchQuery } from "@/types/fridge";
 
 interface SearchBarProps {
   query: string;
@@ -13,11 +13,11 @@ interface SearchBarProps {
  * Prosty controlled input do wyszukiwania produktów po nazwie
  * Obsługuje: onChange (debounce w parent hook), onClear, Escape key
  */
-export const SearchBar: React.FC<SearchBarProps> = React.memo(({
+const SearchBarComponent: React.FC<SearchBarProps> = ({
   query,
   onSearch,
   placeholder = "Szukaj produktów...",
-  disabled = false
+  disabled = false,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,9 +53,9 @@ export const SearchBar: React.FC<SearchBarProps> = React.memo(({
    */
   const handleClear = () => {
     if (inputRef.current) {
-      inputRef.current.value = '';
+      inputRef.current.value = "";
     }
-    onSearch('');
+    onSearch("");
     inputRef.current?.focus();
   };
 
@@ -64,7 +64,7 @@ export const SearchBar: React.FC<SearchBarProps> = React.memo(({
    */
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Escape key clears search
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       handleClear();
     }
   };
@@ -119,7 +119,11 @@ export const SearchBar: React.FC<SearchBarProps> = React.memo(({
       {/* Note: Validation feedback removed to keep component simple and preserve focus */}
     </form>
   );
-}, (prevProps, nextProps) => {
+};
+
+SearchBarComponent.displayName = "SearchBar";
+
+export const SearchBar = React.memo(SearchBarComponent, (prevProps, nextProps) => {
   // Custom comparison - only re-render if props actually change
   return (
     prevProps.query === nextProps.query &&

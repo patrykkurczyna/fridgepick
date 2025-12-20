@@ -1,6 +1,6 @@
-import React, { useState, type FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LoginFormProps {
   redirectTo?: string | null;
@@ -19,16 +19,16 @@ interface LoginFormState {
  */
 const validateLoginForm = (email: string, password: string): string | null => {
   if (!email) {
-    return 'Email jest wymagany';
+    return "Email jest wymagany";
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return 'Nieprawidłowy format email';
+    return "Nieprawidłowy format email";
   }
   if (!password) {
-    return 'Hasło jest wymagane';
+    return "Hasło jest wymagane";
   }
   if (password.length < 8) {
-    return 'Hasło musi mieć minimum 8 znaków';
+    return "Hasło musi mieć minimum 8 znaków";
   }
   return null;
 };
@@ -40,27 +40,25 @@ const validateLoginForm = (email: string, password: string): string | null => {
 export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
   const { login } = useAuth();
   const [formState, setFormState] = useState<LoginFormState>({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     rememberMe: false,
     isLoading: false,
-    error: null
+    error: null,
   });
 
-  const handleInputChange = (field: 'email' | 'password') => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFormState(prev => ({
+  const handleInputChange = (field: "email" | "password") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormState((prev) => ({
       ...prev,
       [field]: e.target.value,
-      error: null // Wyczyść błąd przy zmianie wartości
+      error: null, // Wyczyść błąd przy zmianie wartości
     }));
   };
 
   const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
-      rememberMe: e.target.checked
+      rememberMe: e.target.checked,
     }));
   };
 
@@ -70,11 +68,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
     // Walidacja client-side
     const validationError = validateLoginForm(formState.email, formState.password);
     if (validationError) {
-      setFormState(prev => ({ ...prev, error: validationError }));
+      setFormState((prev) => ({ ...prev, error: validationError }));
       return;
     }
 
-    setFormState(prev => ({ ...prev, isLoading: true, error: null }));
+    setFormState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       // Wywołanie API logowania przez useAuth hook
@@ -82,22 +80,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
 
       if (result.success) {
         // Sukces - przekieruj użytkownika
-        const destination = redirectTo || '/fridge';
+        const destination = redirectTo || "/fridge";
         window.location.href = destination;
       } else {
         // Błąd - wyświetl komunikat
-        setFormState(prev => ({
+        setFormState((prev) => ({
           ...prev,
-          error: result.error || 'Logowanie nie powiodło się'
+          error: result.error || "Logowanie nie powiodło się",
         }));
       }
     } catch (err) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : 'Wystąpił nieoczekiwany błąd'
+        error: err instanceof Error ? err.message : "Wystąpił nieoczekiwany błąd",
       }));
     } finally {
-      setFormState(prev => ({ ...prev, isLoading: false }));
+      setFormState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -112,10 +110,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
 
       {/* Email */}
       <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
           Email
         </label>
         <input
@@ -124,7 +119,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
           autoComplete="email"
           required
           value={formState.email}
-          onChange={handleInputChange('email')}
+          onChange={handleInputChange("email")}
           disabled={formState.isLoading}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400
                      focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
@@ -136,10 +131,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
 
       {/* Hasło */}
       <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
           Hasło
         </label>
         <input
@@ -148,7 +140,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
           autoComplete="current-password"
           required
           value={formState.password}
-          onChange={handleInputChange('password')}
+          onChange={handleInputChange("password")}
           disabled={formState.isLoading}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400
                      focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
@@ -170,10 +162,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
             className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded
                        disabled:cursor-not-allowed"
           />
-          <label
-            htmlFor="remember-me"
-            className="ml-2 block text-sm text-gray-700"
-          >
+          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
             Zapamiętaj mnie
           </label>
         </div>
@@ -203,14 +192,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -220,13 +202,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
             Logowanie...
           </span>
         ) : (
-          'Zaloguj się'
+          "Zaloguj się"
         )}
       </Button>
 
       {/* Link do rejestracji */}
       <div className="text-center text-sm text-gray-600">
-        Nie masz konta?{' '}
+        Nie masz konta?{" "}
         <a
           href="/auth/register"
           className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Demo button component for the landing page
@@ -19,13 +19,13 @@ export const DemoButton: React.FC = () => {
 
       if (result.success) {
         // Redirect to fridge with demo mode parameter
-        window.location.href = '/fridge?demo=true';
+        window.location.href = "/fridge?demo=true";
       } else {
-        setError(result.error || 'Nie udało się utworzyć konta demo');
+        setError(result.error || "Nie udało się utworzyć konta demo");
       }
     } catch (err) {
-      setError('Wystąpił błąd połączenia');
-      console.error('Demo user creation error:', err);
+      setError("Wystąpił błąd połączenia");
+      console.error("Demo user creation error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -46,14 +46,7 @@ export const DemoButton: React.FC = () => {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -63,17 +56,11 @@ export const DemoButton: React.FC = () => {
             Tworzenie konta demo...
           </span>
         ) : (
-          '🎭 Wypróbuj tryb Demo'
+          "🎭 Wypróbuj tryb Demo"
         )}
       </button>
-      <p className="text-sm text-gray-500 text-center">
-        Przetestuj aplikację bez rejestracji
-      </p>
-      {error && (
-        <p className="text-sm text-red-600 text-center">
-          {error}
-        </p>
-      )}
+      <p className="text-sm text-gray-500 text-center">Przetestuj aplikację bez rejestracji</p>
+      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
     </div>
   );
 };

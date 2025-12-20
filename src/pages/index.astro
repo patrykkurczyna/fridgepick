@@ -1,13 +1,12 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { Logo } from '../components/Logo';
-import { DemoButton } from '../components/DemoButton';
+import Layout from "../layouts/Layout.astro";
+import { Logo } from "../components/Logo";
+import { DemoButton } from "../components/DemoButton";
 
 const title = "FridgePick MVP";
-const description = "Inteligentna aplikacja do planowania posiłków";
 
 // Check for auth code from email link (password recovery, magic link, etc.)
-const code = Astro.url.searchParams.get('code');
+const code = Astro.url.searchParams.get("code");
 
 // If there's a code in the URL, it's likely a password recovery or email confirmation
 // Redirect to reset-password page which will handle the code exchange
@@ -20,127 +19,132 @@ if (Astro.locals.session && Astro.locals.user) {
   // User is authenticated, redirect to fridge
   // Demo users get ?demo=true parameter
   if (Astro.locals.user.user_metadata?.is_demo) {
-    return Astro.redirect('/fridge?demo=true');
+    return Astro.redirect("/fridge?demo=true");
   }
-  return Astro.redirect('/fridge');
+  return Astro.redirect("/fridge");
 }
 ---
 
 <Layout title={title}>
-    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
-        <div class="max-w-4xl mx-auto text-center px-4 py-16">
-            <!-- Logo -->
-            <div class="flex justify-center mb-8">
-                <Logo client:load size="xl" variant="light" />
-            </div>
+  <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+    <div class="max-w-4xl mx-auto text-center px-4 py-16">
+      <!-- Logo -->
+      <div class="flex justify-center mb-8">
+        <Logo client:load size="xl" variant="light" />
+      </div>
 
-            <!-- Główny tytuł i opis -->
-            <h1 class="text-5xl font-bold text-gray-900 mb-4">
-                Witaj w FridgePick
-            </h1>
-            <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-                Inteligentna aplikacja do zarządzania produktami spożywczymi i planowania zbilansowanych posiłków
-            </p>
+      <!-- Główny tytuł i opis -->
+      <h1 class="text-5xl font-bold text-gray-900 mb-4">Witaj w FridgePick</h1>
+      <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+        Inteligentna aplikacja do zarządzania produktami spożywczymi i planowania zbilansowanych posiłków
+      </p>
 
-            <!-- Główne przyciski CTA -->
-            <div class="space-y-4 mb-16">
-                <!-- Przycisk Demo -->
-                <DemoButton client:load />
+      <!-- Główne przyciski CTA -->
+      <div class="space-y-4 mb-16">
+        <!-- Przycisk Demo -->
+        <DemoButton client:load />
 
-                <!-- Przyciski logowania i rejestracji -->
-                <div class="flex gap-4 justify-center pt-4">
-                    <a
-                        href="/auth/login"
-                        class="flex-1 max-w-xs bg-white border-2 border-emerald-600 text-emerald-600 px-6 py-3 rounded-lg hover:bg-emerald-50 transition-colors font-medium cursor-pointer"
-                    >
-                        Zaloguj się
-                    </a>
+        <!-- Przyciski logowania i rejestracji -->
+        <div class="flex gap-4 justify-center pt-4">
+          <a
+            href="/auth/login"
+            class="flex-1 max-w-xs bg-white border-2 border-emerald-600 text-emerald-600 px-6 py-3 rounded-lg hover:bg-emerald-50 transition-colors font-medium cursor-pointer"
+          >
+            Zaloguj się
+          </a>
 
-                    <a
-                        href="/auth/register"
-                        class="flex-1 max-w-xs bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium cursor-pointer"
-                    >
-                        Zarejestruj się
-                    </a>
-                </div>
-            </div>
-
-            <!-- Funkcjonalności MVP -->
-            <div class="bg-white rounded-2xl shadow-md p-8 mb-12">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-6">
-                    Dostępne funkcjonalności
-                </h2>
-                <div class="grid md:grid-cols-2 gap-6 text-left">
-                    <div class="flex items-start gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Zarządzanie produktami</h3>
-                            <p class="text-sm text-gray-600">Dodawaj, edytuj i śledź produkty w swojej lodówce</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Wyszukiwanie i sortowanie</h3>
-                            <p class="text-sm text-gray-600">Szybko znajdź produkty po nazwie lub kategorii</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Szybkie dodawanie</h3>
-                            <p class="text-sm text-gray-600">Dodaj popularne produkty jednym kliknięciem</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Wskaźniki dat ważności</h3>
-                            <p class="text-sm text-gray-600">Śledź daty ważności i zapobiegaj marnowaniu żywności</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Nadchodzące funkcje -->
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                <h3 class="text-lg font-semibold text-blue-900 mb-3">
-                    📅 Nadchodzące funkcje
-                </h3>
-                <div class="flex flex-wrap gap-2 justify-center text-sm">
-                    <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
-                        Wyszukiwanie przepisów
-                    </span>
-                    <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
-                        AI planowanie jadłospisu
-                    </span>
-                    <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
-                        Baza przepisów
-                    </span>
-                    <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
-                        Tygodniowe plany posiłków
-                    </span>
-                </div>
-            </div>
+          <a
+            href="/auth/register"
+            class="flex-1 max-w-xs bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium cursor-pointer"
+          >
+            Zarejestruj się
+          </a>
         </div>
+      </div>
+
+      <!-- Funkcjonalności MVP -->
+      <div class="bg-white rounded-2xl shadow-md p-8 mb-12">
+        <h2 class="text-2xl font-semibold text-gray-900 mb-6">Dostępne funkcjonalności</h2>
+        <div class="grid md:grid-cols-2 gap-6 text-left">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width={2}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">Zarządzanie produktami</h3>
+              <p class="text-sm text-gray-600">Dodawaj, edytuj i śledź produkty w swojej lodówce</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">Wyszukiwanie i sortowanie</h3>
+              <p class="text-sm text-gray-600">Szybko znajdź produkty po nazwie lub kategorii</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">Szybkie dodawanie</h3>
+              <p class="text-sm text-gray-600">Dodaj popularne produkty jednym kliknięciem</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">Wskaźniki dat ważności</h3>
+              <p class="text-sm text-gray-600">Śledź daty ważności i zapobiegaj marnowaniu żywności</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nadchodzące funkcje -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 class="text-lg font-semibold text-blue-900 mb-3">📅 Nadchodzące funkcje</h3>
+        <div class="flex flex-wrap gap-2 justify-center text-sm">
+          <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
+            Wyszukiwanie przepisów
+          </span>
+          <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
+            AI planowanie jadłospisu
+          </span>
+          <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200"> Baza przepisów </span>
+          <span class="bg-white px-3 py-1 rounded-full text-blue-700 border border-blue-200">
+            Tygodniowe plany posiłków
+          </span>
+        </div>
+      </div>
     </div>
+  </div>
 </Layout>

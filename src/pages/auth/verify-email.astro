@@ -1,20 +1,20 @@
 ---
-import AuthLayout from '../../layouts/AuthLayout.astro';
+import AuthLayout from "../../layouts/AuthLayout.astro";
 
-const title = 'Weryfikacja emaila';
+const title = "Weryfikacja emaila";
 
 // Pobierz token z query params
-const token = Astro.url.searchParams.get('token');
-const type = Astro.url.searchParams.get('type');
+const token = Astro.url.searchParams.get("token");
+const type = Astro.url.searchParams.get("type");
 
 let verificationStatus = {
   success: false,
-  error: '',
-  message: ''
+  error: "",
+  message: "",
 };
 
 // TODO: Po implementacji backendu - weryfikuj token przez Supabase
-if (token && type === 'signup') {
+if (token && type === "signup") {
   // Placeholder - symulacja weryfikacji
   // const { error } = await Astro.locals.supabase.auth.verifyOtp({
   //   token_hash: token,
@@ -38,100 +38,82 @@ if (token && type === 'signup') {
   // Placeholder - dla testu zakładamy sukces
   verificationStatus = {
     success: true,
-    error: '',
-    message: 'Email zostanie zweryfikowany po implementacji backendu'
+    error: "",
+    message: "Email zostanie zweryfikowany po implementacji backendu",
   };
 } else {
   verificationStatus = {
     success: false,
-    error: 'Nieprawidłowy lub wygasły link weryfikacyjny',
-    message: ''
+    error: "Nieprawidłowy lub wygasły link weryfikacyjny",
+    message: "",
   };
 }
 ---
 
 <AuthLayout title={title}>
   <div class="space-y-6">
-    {verificationStatus.success ? (
-      <!-- Sukces weryfikacji -->
-      <div class="bg-green-50 border border-green-200 rounded-md p-6 text-center">
-        <div class="mb-4">
-          <svg
-            class="mx-auto h-16 w-16 text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold text-green-900 mb-2">
-          Email zweryfikowany!
-        </h3>
-        <p class="text-sm text-green-800 mb-6">
-          {verificationStatus.message || 'Twój adres email został pomyślnie zweryfikowany. Możesz teraz zalogować się do swojego konta.'}
-        </p>
-        <a
-          href="/auth/login"
-          class="inline-block bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium cursor-pointer"
-        >
-          Przejdź do logowania
-        </a>
-      </div>
-    ) : (
-      <!-- Błąd weryfikacji -->
-      <div class="bg-red-50 border border-red-200 rounded-md p-6 text-center">
-        <div class="mb-4">
-          <svg
-            class="mx-auto h-16 w-16 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h3 class="text-xl font-semibold text-red-900 mb-2">
-          Weryfikacja nie powiodła się
-        </h3>
-        <p class="text-sm text-red-800 mb-6">
-          {verificationStatus.error}
-        </p>
-        <div class="space-y-3">
-          <a
-            href="/auth/register"
-            class="block bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium cursor-pointer"
-          >
-            Spróbuj zarejestrować się ponownie
-          </a>
+    {
+      verificationStatus.success ? (
+        <div class="bg-green-50 border border-green-200 rounded-md p-6 text-center">
+          <div class="mb-4">
+            <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-green-900 mb-2">Email zweryfikowany!</h3>
+          <p class="text-sm text-green-800 mb-6">
+            {verificationStatus.message ||
+              "Twój adres email został pomyślnie zweryfikowany. Możesz teraz zalogować się do swojego konta."}
+          </p>
           <a
             href="/auth/login"
-            class="block text-sm text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
+            class="inline-block bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium cursor-pointer"
           >
-            Wróć do logowania
+            Przejdź do logowania
           </a>
         </div>
-      </div>
-    )}
+      ) : (
+        <div class="bg-red-50 border border-red-200 rounded-md p-6 text-center">
+          <div class="mb-4">
+            <svg class="mx-auto h-16 w-16 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-red-900 mb-2">Weryfikacja nie powiodła się</h3>
+          <p class="text-sm text-red-800 mb-6">{verificationStatus.error}</p>
+          <div class="space-y-3">
+            <a
+              href="/auth/register"
+              class="block bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium cursor-pointer"
+            >
+              Spróbuj zarejestrować się ponownie
+            </a>
+            <a
+              href="/auth/login"
+              class="block text-sm text-emerald-600 hover:text-emerald-500 transition-colors cursor-pointer"
+            >
+              Wróć do logowania
+            </a>
+          </div>
+        </div>
+      )
+    }
   </div>
 
   <div slot="footer">
     <p class="text-gray-500">
-      Potrzebujesz pomocy?{' '}
-      <a
-        href="/"
-        class="text-emerald-600 hover:text-emerald-500 transition-colors font-medium cursor-pointer"
-      >
+      Potrzebujesz pomocy?{" "}
+      <a href="/" class="text-emerald-600 hover:text-emerald-500 transition-colors font-medium cursor-pointer">
         Skontaktuj się z nami
       </a>
     </p>
