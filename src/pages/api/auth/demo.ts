@@ -1,9 +1,11 @@
 import type { APIRoute } from "astro";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * POST /api/auth/demo
  * Creates a demo user account with auto-expiry (7 days)
  * Uses unified flow: creates a real Supabase user with is_demo flag
+ * Uses Admin API with service role key to bypass email confirmation
  *
  * Request body: none (or empty)
  *
@@ -26,22 +28,48 @@ export const POST: APIRoute = async ({ locals }) => {
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 7);
 
-    // Create demo user with Supabase
-    const { data, error } = await locals.supabase.auth.signUp({
-      email: demoEmail,
-      password: demoPassword,
-      options: {
-        data: {
-          is_demo: true,
-          demo_expires_at: expiryDate.toISOString(),
-        },
-        // Skip email verification for demo users
-        emailRedirectTo: undefined,
+    // Get env vars - support both Node.js and Cloudflare runtime
+    const runtime = (locals as { runtime?: { env?: Record<string, string> } }).runtime;
+    const supabaseUrl =
+      runtime?.env?.SUPABASE_URL || import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || "";
+    const supabaseServiceRoleKey =
+      runtime?.env?.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+    if (!supabaseServiceRoleKey) {
+      console.error("Demo API: SUPABASE_SERVICE_ROLE_KEY is not configured");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Tryb demo jest tymczasowo niedostępny. Spróbuj ponownie później.",
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Create admin client with service role key to bypass email confirmation
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
     });
 
-    if (error) {
-      console.error("Demo user creation error:", error);
+    // Create demo user with Admin API - email is auto-confirmed
+    const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: demoEmail,
+      password: demoPassword,
+      email_confirm: true, // Auto-confirm email for demo users
+      user_metadata: {
+        is_demo: true,
+        demo_expires_at: expiryDate.toISOString(),
+      },
+    });
+
+    if (createError) {
+      console.error("Demo user creation error:", createError);
       return new Response(
         JSON.stringify({
           success: false,
@@ -55,7 +83,7 @@ export const POST: APIRoute = async ({ locals }) => {
     }
 
     // Check if user was created
-    if (!data.user || !data.session) {
+    if (!userData.user) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -67,6 +95,28 @@ export const POST: APIRoute = async ({ locals }) => {
         }
       );
     }
+
+    // Sign in the demo user to get a session
+    const { data: signInData, error: signInError } = await locals.supabase.auth.signInWithPassword({
+      email: demoEmail,
+      password: demoPassword,
+    });
+
+    if (signInError || !signInData.session) {
+      console.error("Demo user sign-in error:", signInError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Nie udało się zalogować do konta demo. Spróbuj ponownie.",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const data = { user: userData.user, session: signInData.session };
 
     // CRITICAL: Sync user to public.users table using SECURITY DEFINER function
     // This bypasses RLS policies that would block direct INSERT
@@ -115,7 +165,7 @@ export const POST: APIRoute = async ({ locals }) => {
         headers: { "Content-Type": "application/json" },
       }
     );
-  } catch {
+  } catch (error) {
     console.error("Demo API error:", error);
     return new Response(
       JSON.stringify({
