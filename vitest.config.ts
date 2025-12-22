@@ -58,13 +58,7 @@ export default defineConfig({
     include: ["src/__tests__/**/*.test.{ts,tsx}"],
 
     // Exclude patterns
-    exclude: [
-      "node_modules/",
-      "dist/",
-      ".idea/",
-      ".git/",
-      ".cache/",
-    ],
+    exclude: ["node_modules/", "dist/", ".idea/", ".git/", ".cache/"],
 
     // Test timeout
     testTimeout: 10000,

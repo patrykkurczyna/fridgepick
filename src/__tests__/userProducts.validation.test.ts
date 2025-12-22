@@ -1,14 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   validateCreateUserProduct,
-  validateUpdateUserProduct,
   validateUserProductsQuery,
   validateProductId,
   formatValidationErrors,
-  CreateUserProductSchema,
-  UpdateUserProductSchema,
-  UserProductsQuerySchema,
-  ProductIdSchema,
 } from "../validation/userProducts";
 
 describe("userProducts validation", () => {
