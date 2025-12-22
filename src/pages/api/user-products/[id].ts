@@ -122,17 +122,21 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
 
     // Create authenticated Supabase client with user's JWT token for RLS context
     const { createClient } = await import("@supabase/supabase-js");
-    const authenticatedSupabase = createClient(
-      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || "",
-      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "",
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+
+    // Get env vars - support both Node.js and Cloudflare runtime
+    const runtime = (locals as { runtime?: { env?: Record<string, string> } }).runtime;
+    const supabaseUrl =
+      runtime?.env?.SUPABASE_URL || import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || "";
+    const supabaseKey =
+      runtime?.env?.SUPABASE_KEY || import.meta.env.SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_KEY || "";
+
+    const authenticatedSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      },
+    });
 
     // Initialize service layer with user-authenticated Supabase client
     const repository = new UserProductRepository(authenticatedSupabase);
@@ -281,17 +285,21 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
 
     // Create authenticated Supabase client with user's JWT token for RLS context
     const { createClient } = await import("@supabase/supabase-js");
-    const authenticatedSupabase = createClient(
-      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || "",
-      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "",
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+
+    // Get env vars - support both Node.js and Cloudflare runtime
+    const runtime = (locals as { runtime?: { env?: Record<string, string> } }).runtime;
+    const supabaseUrl =
+      runtime?.env?.SUPABASE_URL || import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || "";
+    const supabaseKey =
+      runtime?.env?.SUPABASE_KEY || import.meta.env.SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_KEY || "";
+
+    const authenticatedSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      },
+    });
 
     // Initialize service layer with user-authenticated Supabase client
     const repository = new UserProductRepository(authenticatedSupabase);
@@ -438,17 +446,21 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
 
     // Create authenticated Supabase client with user's JWT token for RLS context
     const { createClient } = await import("@supabase/supabase-js");
-    const authenticatedSupabase = createClient(
-      import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || "",
-      import.meta.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "",
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+
+    // Get env vars - support both Node.js and Cloudflare runtime
+    const runtime = (locals as { runtime?: { env?: Record<string, string> } }).runtime;
+    const supabaseUrl =
+      runtime?.env?.SUPABASE_URL || import.meta.env.SUPABASE_URL || import.meta.env.PUBLIC_SUPABASE_URL || "";
+    const supabaseKey =
+      runtime?.env?.SUPABASE_KEY || import.meta.env.SUPABASE_KEY || import.meta.env.PUBLIC_SUPABASE_KEY || "";
+
+    const authenticatedSupabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      },
+    });
 
     // Initialize service layer with user-authenticated Supabase client
     const repository = new UserProductRepository(authenticatedSupabase);
