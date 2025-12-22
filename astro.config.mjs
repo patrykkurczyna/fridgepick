@@ -7,6 +7,7 @@ import sitemap from "@astrojs/sitemap";
 import node from "@astrojs/node";
 import cloudflare from "@astrojs/cloudflare";
 
+// eslint-disable-next-line no-undef
 const isCloudflare = process.env.CF_PAGES === "1";
 
 // https://astro.build/config
