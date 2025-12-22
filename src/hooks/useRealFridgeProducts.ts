@@ -93,8 +93,8 @@ export const useRealFridgeProducts = () => {
         setIsSearching(false);
         setIsInitialLoad(false);
         setLastFetchTime(new Date());
-      } catch {
-        setError(error instanceof Error ? error.message : "Failed to load products");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Nie udało się załadować produktów");
         setLoading(false);
         setIsSearching(false);
       }
