@@ -1,0 +1,17 @@
+---
+import AuthenticatedLayout from "../../layouts/AuthenticatedLayout.astro";
+import { RecommendationsView } from "@/components/recommendations/RecommendationsView";
+import { DemoModeIndicator } from "@/components/auth/DemoModeIndicator";
+
+const title = "Rekomendacje AI - FridgePick";
+const currentPath = Astro.url.pathname;
+
+// Check if user is in demo mode
+const isDemo = Astro.locals.user?.user_metadata?.is_demo ?? false;
+const demoEmail = isDemo ? Astro.locals.user?.email : undefined;
+---
+
+<AuthenticatedLayout title={title} currentPath={currentPath}>
+  {isDemo && <DemoModeIndicator client:load demoEmail={demoEmail} />}
+  <RecommendationsView client:load />
+</AuthenticatedLayout>

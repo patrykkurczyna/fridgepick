@@ -2,8 +2,9 @@ Your task is to implement a frontend view based on the provided implementation p
 
 First, review the implementation plan:
 
+
 <implementation_plan>
-@.ai/recipes-view-implementation-plan.md
+@.ai/ai-recommendations-view-implementation-plan.md
 </implementation_plan>
 
 Now review the implementation rules:
