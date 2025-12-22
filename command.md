@@ -1,17 +1,14 @@
-You are a GitHub Actions specialist in the stack @tech-stack.md @package.json
+You are a GitHub Actions and Cloudflare specialist.
 
-Create a "pull-request.yml" scenario based on @.ai/github-action.mdc
+1) Review the project:
 
-Workflow:
-The "pull-request.yml" scenario should work as follows:
+- Tech Stack @tech-stack.md
+- Current project configuration @astro.config.mjs
+- Dependencies and scripts @package.json
+- Available environment variables @.env.example
 
-- Linting code
-- Then two parallel - unit-test and e2e-test
-- Finally - status-comment (comment to PR about the status of the whole)
+2) Adapt the project to support deployment to Cloudflare
 
-Additional notes:
-- status-comment runs only when the previous set of 3 passes correctly
-- in the e2e job download browsers according to @playwright.config.ts
-- in the e2e job set the "integration" environment and variables from secrets according to @.env.example
-- collect coverage of unit tests and e2e tests
-- tell me what env vars I need to set in github
+3) Create a CI/CD scenario "main.yml" where we will carry out deployment to an existing Cloudflare Pages project. Base on @pull-request.yml but in the new scenario do not test E2E.
+
+4) At the end, fix the scenario using @github-action.mdc
