@@ -2,7 +2,15 @@ import type { APIRoute } from "astro";
 import type { ProductCategoriesResponse } from "../../types";
 import { ProductCategoryRepository } from "../../repositories/ProductCategoryRepository";
 import { ProductCategoryService } from "../../services/ProductCategoryService";
-import { checkRateLimit, checkETag, withTimeout, HttpStatus } from "../../middleware/errorHandler";
+import {
+  checkRateLimit,
+  checkETag,
+  withTimeout,
+  HttpStatus,
+  ErrorCode,
+  ApiError,
+  createErrorResponse,
+} from "../../middleware/errorHandler";
 
 /**
  * GET /api/product-categories

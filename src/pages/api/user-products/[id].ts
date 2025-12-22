@@ -8,7 +8,7 @@ import {
   validateUpdateUserProductWithBusinessRules,
   formatValidationErrors,
 } from "../../../validation/userProducts";
-import { HttpStatus, withTimeout } from "../../../middleware/errorHandler";
+import { HttpStatus, ErrorCode, ApiError, withTimeout, createErrorResponse } from "../../../middleware/errorHandler";
 
 /**
  * PUT /api/user-products/:id
