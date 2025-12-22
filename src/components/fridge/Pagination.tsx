@@ -111,7 +111,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       {showInfo && (
         <div className="text-sm text-gray-700">
           Pokazano <span className="font-medium">{startItem}</span> do <span className="font-medium">{endItem}</span> z{" "}
-          <span className="font-medium">{totalItems}</span> produktów
+          <span className="font-medium">{totalItems}</span> wyników
         </div>
       )}
 

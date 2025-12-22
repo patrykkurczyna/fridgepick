@@ -1,9 +1,9 @@
 ---
-import AuthenticatedLayout from "../layouts/AuthenticatedLayout.astro";
-import { FridgeView } from "@/components/fridge/FridgeView";
+import AuthenticatedLayout from "../../layouts/AuthenticatedLayout.astro";
+import { RecipesView } from "@/components/recipes/RecipesView";
 import { DemoModeIndicator } from "@/components/auth/DemoModeIndicator";
 
-const title = "Moja Lodówka - FridgePick";
+const title = "Przepisy - FridgePick";
 const currentPath = Astro.url.pathname;
 
 // Check if user is in demo mode
@@ -13,5 +13,5 @@ const demoEmail = isDemo ? Astro.locals.user?.email : undefined;
 
 <AuthenticatedLayout title={title} currentPath={currentPath}>
   {isDemo && <DemoModeIndicator client:load demoEmail={demoEmail} />}
-  <FridgeView client:load />
+  <RecipesView client:load />
 </AuthenticatedLayout>

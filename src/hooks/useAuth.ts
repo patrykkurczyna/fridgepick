@@ -181,8 +181,8 @@ export const useAuth = (): AuthState & {
           isAuthenticated: false,
         });
       }
-    } catch {
-      console.error("Auth check error:", error);
+    } catch (err) {
+      console.error("Auth check error:", err);
       clearCache();
 
       setState({
@@ -231,8 +231,8 @@ export const useAuth = (): AuthState & {
           setState((prev) => ({ ...prev, loading: false }));
           return { success: false, error: data.error || "Logowanie nie powiodło się" };
         }
-      } catch {
-        console.error("Login error:", error);
+      } catch (err) {
+        console.error("Login error:", err);
         setState((prev) => ({ ...prev, loading: false }));
         return { success: false, error: "Wystąpił błąd połączenia" };
       }
@@ -288,8 +288,8 @@ export const useAuth = (): AuthState & {
           setState((prev) => ({ ...prev, loading: false }));
           return { success: false, error: data.error || "Rejestracja nie powiodła się" };
         }
-      } catch {
-        console.error("Register error:", error);
+      } catch (err) {
+        console.error("Register error:", err);
         setState((prev) => ({ ...prev, loading: false }));
         return { success: false, error: "Wystąpił błąd połączenia" };
       }
@@ -381,8 +381,8 @@ export const useAuth = (): AuthState & {
         setState((prev) => ({ ...prev, loading: false }));
         return { success: false, error: data.error || "Nie udało się utworzyć konta demo" };
       }
-    } catch {
-      console.error("Demo user creation error:", error);
+    } catch (err) {
+      console.error("Demo user creation error:", err);
       setState((prev) => ({ ...prev, loading: false }));
       return { success: false, error: "Wystąpił błąd połączenia" };
     }
@@ -412,8 +412,8 @@ export const useAuth = (): AuthState & {
 
       // Redirect to landing page
       window.location.assign("/");
-    } catch {
-      console.error("Logout error:", error);
+    } catch (err) {
+      console.error("Logout error:", err);
       // Even if API fails, clear local state
       clearCache();
       setState({

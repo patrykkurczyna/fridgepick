@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#f3f4f6"/>
+
+  <!-- Plate -->
+  <ellipse cx="200" cy="170" rx="100" ry="20" fill="#e5e7eb"/>
+  <ellipse cx="200" cy="165" rx="90" ry="18" fill="#f9fafb"/>
+  <ellipse cx="200" cy="160" rx="80" ry="16" fill="#e5e7eb"/>
+
+  <!-- Food on plate (abstract shapes) -->
+  <circle cx="175" cy="145" r="25" fill="#fcd34d"/>
+  <circle cx="210" cy="140" r="20" fill="#86efac"/>
+  <circle cx="230" cy="155" r="15" fill="#fca5a5"/>
+  <rect x="160" y="130" width="35" height="12" rx="6" fill="#a78bfa"/>
+
+  <!-- Fork -->
+  <g transform="translate(90, 100) rotate(-30)">
+    <rect x="0" y="0" width="6" height="80" rx="3" fill="#9ca3af"/>
+    <rect x="-4" y="0" width="4" height="25" rx="2" fill="#9ca3af"/>
+    <rect x="6" y="0" width="4" height="25" rx="2" fill="#9ca3af"/>
+    <rect x="-9" y="0" width="4" height="20" rx="2" fill="#9ca3af"/>
+    <rect x="11" y="0" width="4" height="20" rx="2" fill="#9ca3af"/>
+  </g>
+
+  <!-- Knife -->
+  <g transform="translate(290, 90) rotate(30)">
+    <rect x="0" y="0" width="8" height="80" rx="4" fill="#9ca3af"/>
+    <path d="M8 0 L20 30 L8 35 Z" fill="#d1d5db"/>
+  </g>
+
+  <!-- Text -->
+  <text x="200" y="240" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" fill="#9ca3af">
+    Brak zdjecia
+  </text>
+</svg>

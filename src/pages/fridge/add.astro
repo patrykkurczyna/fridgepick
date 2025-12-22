@@ -1,9 +1,11 @@
 ---
 // Add new product page
-import Layout from "@/layouts/Layout.astro";
+import AuthenticatedLayout from "@/layouts/AuthenticatedLayout.astro";
 import { ProductFormView } from "@/components/product-form/ProductFormView";
+
+const currentPath = Astro.url.pathname;
 ---
 
-<Layout title="Dodaj produkt - FridgePick">
+<AuthenticatedLayout title="Dodaj produkt - FridgePick" currentPath={currentPath}>
   <ProductFormView mode="create" client:load />
-</Layout>
+</AuthenticatedLayout>

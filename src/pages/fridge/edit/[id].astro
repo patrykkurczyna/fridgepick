@@ -1,11 +1,12 @@
 ---
 // Edit existing product page
-import Layout from "@/layouts/Layout.astro";
+import AuthenticatedLayout from "@/layouts/AuthenticatedLayout.astro";
 import { ProductFormView } from "@/components/product-form/ProductFormView";
 
 const { id } = Astro.params;
+const currentPath = Astro.url.pathname;
 ---
 
-<Layout title="Edytuj produkt - FridgePick">
+<AuthenticatedLayout title="Edytuj produkt - FridgePick" currentPath={currentPath}>
   <ProductFormView mode="edit" productId={id} client:load />
-</Layout>
+</AuthenticatedLayout>
