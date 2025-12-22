@@ -67,17 +67,17 @@ export class ApiError extends Error {
 
 /**
  * Rate limiting store (simple in-memory implementation)
+ * Note: In Cloudflare Workers, each request may run in a different isolate,
+ * so in-memory rate limiting is approximate. For production, use Cloudflare's
+ * built-in rate limiting or a distributed store like KV.
  */
 class RateLimitStore {
   private store = new Map<string, { count: number; resetTime: number }>();
-  private readonly cleanupInterval: NodeJS.Timeout;
-
-  constructor() {
-    // Clean up expired entries every 5 minutes
-    this.cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
-  }
 
   increment(key: string, windowMs: number): { count: number; resetTime: number } {
+    // Clean up expired entries on each request (instead of setInterval)
+    this.cleanup();
+
     const now = Date.now();
     const current = this.store.get(key);
 
@@ -103,15 +103,21 @@ class RateLimitStore {
   }
 
   destroy(): void {
-    clearInterval(this.cleanupInterval);
     this.store.clear();
   }
 }
 
 /**
- * Global rate limiter instance
+ * Lazy-initialized rate limiter instance
  */
-const rateLimiter = new RateLimitStore();
+let rateLimiter: RateLimitStore | null = null;
+
+function getRateLimiter(): RateLimitStore {
+  if (!rateLimiter) {
+    rateLimiter = new RateLimitStore();
+  }
+  return rateLimiter;
+}
 
 /**
  * Rate limiting configuration
@@ -148,7 +154,7 @@ export function checkRateLimit(
     : DEFAULT_RATE_LIMIT_CONFIG.keyGenerator
       ? DEFAULT_RATE_LIMIT_CONFIG.keyGenerator(request)
       : "";
-  const result = rateLimiter.increment(key, config.windowMs);
+  const result = getRateLimiter().increment(key, config.windowMs);
 
   const remaining = Math.max(0, config.maxRequests - result.count);
   const resetTime = Math.ceil(result.resetTime / 1000);

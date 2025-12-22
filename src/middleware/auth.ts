@@ -361,15 +361,12 @@ export interface UserRateLimit {
 
 /**
  * In-memory rate limit store for authenticated users
+ * Note: In Cloudflare Workers, each request may run in a different isolate,
+ * so in-memory rate limiting is approximate. For production, use Cloudflare's
+ * built-in rate limiting or a distributed store like KV.
  */
 class UserRateLimitStore {
   private store = new Map<string, UserRateLimit>();
-  private readonly cleanupInterval: NodeJS.Timeout;
-
-  constructor() {
-    // Clean up expired entries every 5 minutes
-    this.cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
-  }
 
   checkRateLimit(
     userId: string,
@@ -380,6 +377,9 @@ class UserRateLimitStore {
     remaining: number;
     resetTime: number;
   } {
+    // Clean up expired entries on each request (instead of setInterval)
+    this.cleanup();
+
     const now = Date.now();
     const current = this.store.get(userId);
 
@@ -426,13 +426,19 @@ class UserRateLimitStore {
   }
 
   destroy(): void {
-    clearInterval(this.cleanupInterval);
     this.store.clear();
   }
 }
 
-// Global rate limiter for authenticated users
-const userRateLimiter = new UserRateLimitStore();
+// Lazy-initialized rate limiter for authenticated users
+let userRateLimiter: UserRateLimitStore | null = null;
+
+function getUserRateLimiter(): UserRateLimitStore {
+  if (!userRateLimiter) {
+    userRateLimiter = new UserRateLimitStore();
+  }
+  return userRateLimiter;
+}
 
 /**
  * Check rate limiting for authenticated users
@@ -453,7 +459,7 @@ export function checkUserRateLimit(
   // Demo users might have different limits
   const adjustedMaxRequests = user.isDemo ? Math.min(maxRequests, 50) : maxRequests;
 
-  const result = userRateLimiter.checkRateLimit(user.id, adjustedMaxRequests, windowMs);
+  const result = getUserRateLimiter().checkRateLimit(user.id, adjustedMaxRequests, windowMs);
 
   const resetTime = Math.ceil(result.resetTime / 1000);
 
