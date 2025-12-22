@@ -8,6 +8,7 @@
     "start": "astro preview",
     "dev:astro": "astro dev",
     "build:astro": "astro build",
+    "dev:e2e": "astro dev --mode test",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint .",
@@ -16,7 +17,11 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.3",
@@ -33,6 +38,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "lucide-react": "^0.487.0",
     "next": "^15.5.7",
     "react": "^19.1.1",
@@ -44,6 +50,7 @@
   "devDependencies": {
     "@eslint/compat": "1.2.7",
     "@eslint/js": "9.23.0",
+    "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
