@@ -59,6 +59,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: unit-test
+    environment: prod
     env:
       CF_PAGES: "1"
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
