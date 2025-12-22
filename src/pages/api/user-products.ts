@@ -148,7 +148,7 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
         "X-Page-Offset": userProducts.pagination.offset.toString(),
       },
     });
-  } catch {
+  } catch (error) {
     const responseTime = Date.now() - startTime;
 
     console.error("UserProducts API: GET request error", {
@@ -165,11 +165,12 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
     });
 
     // Convert service errors to API errors
-    if (error instanceof UserProductServiceError) {
-      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
-    }
+    const responseError =
+      error instanceof UserProductServiceError
+        ? new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details)
+        : error;
 
-    const errorResponse = createErrorResponse(error, requestId);
+    const errorResponse = createErrorResponse(responseError, requestId);
     errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
 
     return errorResponse;
@@ -315,7 +316,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
         Location: `/api/user-products/${createResult.product.id}`,
       },
     });
-  } catch {
+  } catch (error) {
     const responseTime = Date.now() - startTime;
 
     console.error("UserProducts API: POST request error", {
@@ -332,11 +333,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     });
 
     // Convert service errors to API errors
-    if (error instanceof UserProductServiceError) {
-      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
-    }
+    const responseError =
+      error instanceof UserProductServiceError
+        ? new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details)
+        : error;
 
-    const errorResponse = createErrorResponse(error, requestId);
+    const errorResponse = createErrorResponse(responseError, requestId);
     errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
 
     return errorResponse;

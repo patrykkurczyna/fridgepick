@@ -120,7 +120,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
         ...rateLimitResult.headers,
       },
     });
-  } catch {
+  } catch (error) {
     const responseTime = Date.now() - startTime;
 
     console.error("ProductCategories API: Error occurred", {

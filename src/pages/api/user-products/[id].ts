@@ -169,7 +169,7 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
         "X-Frame-Options": "DENY",
       },
     });
-  } catch {
+  } catch (error) {
     const responseTime = Date.now() - startTime;
 
     console.error("UserProducts API: PUT request error", {
@@ -187,11 +187,12 @@ export const PUT: APIRoute = async ({ locals, request, params }) => {
     });
 
     // Convert service errors to API errors
-    if (error instanceof UserProductServiceError) {
-      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
-    }
+    const responseError =
+      error instanceof UserProductServiceError
+        ? new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details)
+        : error;
 
-    const errorResponse = createErrorResponse(error, requestId);
+    const errorResponse = createErrorResponse(responseError, requestId);
     errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
 
     return errorResponse;
@@ -326,7 +327,7 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
         "X-Frame-Options": "DENY",
       },
     });
-  } catch {
+  } catch (error) {
     const responseTime = Date.now() - startTime;
 
     console.error("UserProducts API: DELETE request error", {
@@ -344,11 +345,12 @@ export const DELETE: APIRoute = async ({ locals, request, params }) => {
     });
 
     // Convert service errors to API errors
-    if (error instanceof UserProductServiceError) {
-      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
-    }
+    const responseError =
+      error instanceof UserProductServiceError
+        ? new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details)
+        : error;
 
-    const errorResponse = createErrorResponse(error, requestId);
+    const errorResponse = createErrorResponse(responseError, requestId);
     errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
 
     return errorResponse;
@@ -497,7 +499,7 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
         ETag: `"${product.id}-${product.createdAt}"`,
       },
     });
-  } catch {
+  } catch (error) {
     const responseTime = Date.now() - startTime;
 
     console.error("UserProducts API: GET single product request error", {
@@ -515,11 +517,12 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
     });
 
     // Convert service errors to API errors
-    if (error instanceof UserProductServiceError) {
-      error = new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details);
-    }
+    const responseError =
+      error instanceof UserProductServiceError
+        ? new ApiError(error.statusCode as HttpStatus, error.code as ErrorCode, error.message, error.details)
+        : error;
 
-    const errorResponse = createErrorResponse(error, requestId);
+    const errorResponse = createErrorResponse(responseError, requestId);
     errorResponse.headers.set("X-Response-Time", `${responseTime}ms`);
 
     return errorResponse;
