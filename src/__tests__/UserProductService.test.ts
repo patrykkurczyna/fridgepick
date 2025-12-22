@@ -1,12 +1,7 @@
 import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
 import { UserProductService, UserProductServiceError } from "../services/UserProductService";
 import type { IUserProductRepository } from "../repositories/UserProductRepository";
-import type {
-  UserProductWithCategory,
-  CreateUserProductData,
-  UpdateUserProductData,
-} from "../repositories/UserProductRepository";
-import type { UserProductsQueryParams } from "../types";
+import type { UserProductWithCategory } from "../repositories/UserProductRepository";
 
 // Mock data - Database rows with category joins (flattened structure as returned by repository)
 const mockDbProductsWithCategories: UserProductWithCategory[] = [
@@ -413,9 +408,7 @@ describe("UserProductService", () => {
       categoryExistsMock.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(service.createProduct(testUserId, productData)).rejects.toThrow(
-        UserProductServiceError
-      );
+      await expect(service.createProduct(testUserId, productData)).rejects.toThrow(UserProductServiceError);
       expect(categoryExistsMock).toHaveBeenCalledWith(999);
     });
 
@@ -433,9 +426,7 @@ describe("UserProductService", () => {
       categoryExistsMock.mockResolvedValue(true);
 
       // Act & Assert
-      await expect(service.createProduct(testUserId, productData)).rejects.toThrow(
-        UserProductServiceError
-      );
+      await expect(service.createProduct(testUserId, productData)).rejects.toThrow(UserProductServiceError);
     });
   });
 
@@ -506,9 +497,7 @@ describe("UserProductService", () => {
       categoryExistsMock.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(service.updateProduct(testUserId, productId, updateData)).rejects.toThrow(
-        UserProductServiceError
-      );
+      await expect(service.updateProduct(testUserId, productId, updateData)).rejects.toThrow(UserProductServiceError);
     });
   });
 
@@ -532,9 +521,7 @@ describe("UserProductService", () => {
       deleteMock.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(service.deleteProduct(testUserId, "non-existent")).rejects.toThrow(
-        UserProductServiceError
-      );
+      await expect(service.deleteProduct(testUserId, "non-existent")).rejects.toThrow(UserProductServiceError);
     });
   });
 
