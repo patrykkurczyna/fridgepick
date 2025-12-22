@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface LoginFormProps {
   redirectTo?: string | null;
+  emailConfirmed?: boolean;
 }
 
 interface LoginFormState {
@@ -37,7 +38,7 @@ const validateLoginForm = (email: string, password: string): string | null => {
  * Formularz logowania użytkownika
  * Obsługuje walidację client-side i wywołanie API logowania
  */
-export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo, emailConfirmed }) => {
   const { login } = useAuth();
   const [formState, setFormState] = useState<LoginFormState>({
     email: "",
@@ -101,6 +102,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ redirectTo }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Komunikat sukcesu - potwierdzenie email */}
+      {emailConfirmed && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <p className="text-sm text-green-800">✅ Email został potwierdzony! Możesz się teraz zalogować.</p>
+        </div>
+      )}
+
       {/* Komunikat błędu */}
       {formState.error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">

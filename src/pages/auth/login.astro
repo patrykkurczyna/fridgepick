@@ -7,6 +7,9 @@ const title = "Logowanie";
 // Check if user just logged out (from reset password flow)
 const justLoggedOut = Astro.url.searchParams.get("logged_out") === "true";
 
+// Check if email was just confirmed
+const emailConfirmed = Astro.url.searchParams.get("confirmed") === "true";
+
 // Check if user is already logged in (unless they just logged out)
 if (Astro.locals.session && !justLoggedOut) {
   // User is already authenticated, redirect to fridge or the original destination
@@ -22,7 +25,7 @@ const redirectTo = Astro.url.searchParams.get("redirect");
 ---
 
 <AuthLayout title={title}>
-  <LoginForm client:load redirectTo={redirectTo} />
+  <LoginForm client:load redirectTo={redirectTo} emailConfirmed={emailConfirmed} />
 
   <div slot="footer">
     <p class="text-gray-500">

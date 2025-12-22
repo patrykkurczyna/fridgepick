@@ -122,6 +122,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Register with Supabase
+    const origin = new URL(request.url).origin;
     const { data, error } = await locals.supabase.auth.signUp({
       email,
       password,
@@ -129,6 +130,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         data: {
           is_demo: false, // Regular user, not demo
         },
+        emailRedirectTo: `${origin}/auth/login?confirmed=true`,
       },
     });
 
