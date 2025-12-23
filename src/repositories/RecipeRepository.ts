@@ -58,6 +58,7 @@ export interface RecipeWithIngredients extends RecipeRow {
  */
 export interface IRecipeRepository {
   findAll(filters?: RecipeFilters): Promise<RecipeRow[]>;
+  findAllWithIngredients(filters?: RecipeFilters): Promise<RecipeWithIngredients[]>;
   countAll(filters?: Omit<RecipeFilters, "limit" | "offset" | "sort">): Promise<number>;
   findById(id: string): Promise<RecipeWithIngredients | null>;
 }
@@ -167,6 +168,101 @@ export class RecipeRepository implements IRecipeRepository {
       });
 
       throw new DatabaseError("Unexpected error occurred while fetching recipes", error, "UNEXPECTED_ERROR");
+    }
+  }
+
+  /**
+   * Retrieves recipes with ingredients in TWO queries (not N+1)
+   * Optimized for batch fetching to avoid Cloudflare subrequest limits
+   *
+   * @param filters - Optional filters for meal category, protein type, etc.
+   * @returns Promise<RecipeWithIngredients[]> Array of recipes with ingredients
+   * @throws {DatabaseError} When database query fails
+   */
+  async findAllWithIngredients(filters: RecipeFilters = {}): Promise<RecipeWithIngredients[]> {
+    try {
+      console.info("RecipeRepository: Starting findAllWithIngredients query", { filters });
+
+      const queryStartTime = Date.now();
+
+      // Step 1: Get all recipes matching filters
+      const recipes = await this.findAll(filters);
+
+      if (recipes.length === 0) {
+        console.debug("RecipeRepository: No recipes found, skipping ingredients fetch");
+        return [];
+      }
+
+      // Step 2: Get all ingredients for these recipes in ONE query
+      const recipeIds = recipes.map((r) => r.id);
+
+      const { data: ingredientsData, error: ingredientsError } = await this.supabase
+        .from("recipe_ingredients")
+        .select(
+          `
+          id,
+          recipe_id,
+          ingredient_name,
+          quantity,
+          unit,
+          is_required
+        `
+        )
+        .in("recipe_id", recipeIds)
+        .order("is_required", { ascending: false })
+        .order("ingredient_name");
+
+      if (ingredientsError) {
+        console.error("RecipeRepository: Database error fetching ingredients batch", {
+          error: ingredientsError.message,
+          code: ingredientsError.code,
+          recipeCount: recipeIds.length,
+        });
+
+        throw new DatabaseError(
+          "Failed to fetch recipe ingredients",
+          ingredientsError,
+          ingredientsError.code || "RECIPE_INGREDIENTS_BATCH_ERROR"
+        );
+      }
+
+      // Step 3: Group ingredients by recipe_id
+      const ingredientsByRecipeId = new Map<string, RecipeIngredientRow[]>();
+      for (const ing of ingredientsData || []) {
+        const existing = ingredientsByRecipeId.get(ing.recipe_id) || [];
+        existing.push(ing as RecipeIngredientRow);
+        ingredientsByRecipeId.set(ing.recipe_id, existing);
+      }
+
+      // Step 4: Combine recipes with their ingredients
+      const recipesWithIngredients: RecipeWithIngredients[] = recipes.map((recipe) => ({
+        ...recipe,
+        ingredients: ingredientsByRecipeId.get(recipe.id) || [],
+      }));
+
+      const queryTime = Date.now() - queryStartTime;
+
+      console.debug("RecipeRepository: findAllWithIngredients completed", {
+        queryTime: `${queryTime}ms`,
+        recipeCount: recipesWithIngredients.length,
+        totalIngredients: (ingredientsData || []).length,
+      });
+
+      return recipesWithIngredients;
+    } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
+
+      console.error("RecipeRepository: Unexpected error in findAllWithIngredients", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      throw new DatabaseError(
+        "Unexpected error occurred while fetching recipes with ingredients",
+        error,
+        "UNEXPECTED_ERROR"
+      );
     }
   }
 

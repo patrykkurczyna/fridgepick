@@ -4,8 +4,8 @@ import { DEMO_PRODUCTS } from "@/data/demoProducts";
 
 /**
  * POST /api/demo/seed-products
- * Seeds demo products for the current demo user
- * Only works for demo users (is_demo: true in user metadata)
+ * Seeds sample products for the current user
+ * Available for all authenticated users (demo and regular)
  *
  * Response:
  * Success (200): { success: true, count: number, message: string }
@@ -22,25 +22,10 @@ export const POST: APIRoute = async ({ locals }) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Musisz być zalogowany, aby wygenerować produkty demo.",
+          error: "Musisz być zalogowany, aby wygenerować produkty.",
         }),
         {
           status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Check if user is a demo user
-    const isDemo = session.user.user_metadata?.is_demo === true;
-    if (!isDemo) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Ta funkcja jest dostępna tylko dla użytkowników demo.",
-        }),
-        {
-          status: 400,
           headers: { "Content-Type": "application/json" },
         }
       );

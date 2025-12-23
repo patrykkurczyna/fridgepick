@@ -467,27 +467,22 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
         };
       });
 
-      // Fetch recipes with ingredients
+      // Fetch recipes with ingredients in optimized batch query (2 queries instead of N+1)
       const recipeRepo = new RecipeRepository(locals.supabase);
-      const dbRecipes = await recipeRepo.findAll({
+      const dbRecipesWithIngredients = await recipeRepo.findAllWithIngredients({
         meal_category: params.mealCategory ?? undefined,
         limit: 50,
       });
 
-      // Build recipes with ingredients for AI
-      const recipesWithIngredients = await Promise.all(
-        dbRecipes.map(async (recipe) => {
-          const fullRecipe = await recipeRepo.findById(recipe.id);
-          return {
-            id: recipe.id,
-            name: recipe.name,
-            mealCategory: recipe.meal_category,
-            prepTimeMinutes: recipe.prep_time_minutes,
-            nutritionalValues: recipe.nutritional_values,
-            ingredients: fullRecipe?.ingredients.map((i) => i.ingredient_name) ?? [],
-          };
-        })
-      );
+      // Transform for AI consumption
+      const recipesWithIngredients = dbRecipesWithIngredients.map((recipe) => ({
+        id: recipe.id,
+        name: recipe.name,
+        mealCategory: recipe.meal_category,
+        prepTimeMinutes: recipe.prep_time_minutes,
+        nutritionalValues: recipe.nutritional_values,
+        ingredients: recipe.ingredients.map((i) => i.ingredient_name),
+      }));
 
       // Call OpenRouter API
       const openRouter = getOpenRouterService(runtimeEnv);
