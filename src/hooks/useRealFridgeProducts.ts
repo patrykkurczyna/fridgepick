@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { ProductDTO } from "@/types/fridge";
+import type { ProductDTO, SortOption } from "@/types/fridge";
 import type { UserProductsResponse } from "@/types";
 import { getAccessToken } from "@/hooks/useAuth";
 
@@ -18,6 +18,9 @@ export const useRealFridgeProducts = () => {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Sort state
+  const [sortBy, setSortBy] = useState<SortOption>("expires_at");
 
   // Debounce search query (300ms delay)
   useEffect(() => {
@@ -56,8 +59,10 @@ export const useRealFridgeProducts = () => {
         if (debouncedSearch && debouncedSearch.trim().length >= 2) {
           params.append("search", debouncedSearch.trim());
         }
+        // Always include sort parameter
+        params.append("sort", sortBy);
 
-        const url = `/api/user-products${params.toString() ? `?${params.toString()}` : ""}`;
+        const url = `/api/user-products?${params.toString()}`;
 
         const response = await fetch(url, {
           headers: {
@@ -101,15 +106,15 @@ export const useRealFridgeProducts = () => {
     };
 
     fetchProducts();
-  }, [debouncedSearch, refreshTrigger]);
+  }, [debouncedSearch, refreshTrigger, sortBy]);
 
   // Handlers for UI interactions - wrapped in useCallback to prevent re-renders
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
   }, []);
 
-  const handleSortChange = useCallback(() => {
-    // TODO: Implement sorting functionality
+  const handleSortChange = useCallback((newSortBy: SortOption) => {
+    setSortBy(newSortBy);
   }, []);
 
   const handlePageChange = useCallback(() => {
@@ -149,13 +154,13 @@ export const useRealFridgeProducts = () => {
   const filters = useMemo(
     () => ({
       query: searchQuery,
-      sortBy: "expires_at" as const,
+      sortBy,
       sortDirection: "asc" as const,
       showExpired: false,
       expiringSoon: undefined,
       categoryId: undefined,
     }),
-    [searchQuery]
+    [searchQuery, sortBy]
   );
 
   // Memoize return object to prevent re-renders
@@ -167,7 +172,7 @@ export const useRealFridgeProducts = () => {
       isSearching,
       error,
       searchQuery,
-      sortBy: "expires_at" as const,
+      sortBy,
       currentPage: 1,
       pagination,
       filters,
@@ -190,6 +195,7 @@ export const useRealFridgeProducts = () => {
       isSearching,
       error,
       searchQuery,
+      sortBy,
       pagination,
       filters,
       lastFetchTime,
