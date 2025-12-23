@@ -16,6 +16,7 @@ import {
   isOpenRouterConfigured,
   OpenRouterError,
   type JsonSchema,
+  type RuntimeEnv,
 } from "../../../services";
 
 // =============================================================================
@@ -426,8 +427,12 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
     // Parse query parameters
     const params = parseQueryParams(url);
 
+    // Get runtime env for Cloudflare Workers (non-PUBLIC env vars)
+    const runtime = (locals as { runtime?: { env?: RuntimeEnv } }).runtime;
+    const runtimeEnv = runtime?.env;
+
     // Determine if we should use AI
-    const useAI = shouldUseAI(user.isDemo) && isOpenRouterConfigured();
+    const useAI = shouldUseAI(user.isDemo, runtimeEnv) && isOpenRouterConfigured(runtimeEnv);
 
     let recommendations: AIRecipeRecommendationDTO[];
     let aiTokensUsed = 0;
@@ -485,7 +490,7 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
       );
 
       // Call OpenRouter API
-      const openRouter = getOpenRouterService();
+      const openRouter = getOpenRouterService(runtimeEnv);
       const systemMessage = buildSystemMessage();
       const userMessage = buildUserMessage(
         productsWithExpiry,
@@ -556,11 +561,16 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
       });
     } else {
       // === FALLBACK TO DUMMY DATA ===
+      const isConfigured = isOpenRouterConfigured(runtimeEnv);
+      const aiEnabled = shouldUseAI(user.isDemo, runtimeEnv);
       console.info("Recommendations: Using dummy data", {
         requestId,
         userId: user.id.substring(0, 8) + "...",
         isDemo: user.isDemo,
-        reason: !isOpenRouterConfigured() ? "API key not configured" : "feature flag disabled for demo",
+        isOpenRouterConfigured: isConfigured,
+        shouldUseAI: aiEnabled,
+        hasRuntimeEnv: !!runtimeEnv,
+        reason: !isConfigured ? "API key not configured" : "feature flag disabled for demo",
       });
 
       recommendations = filterDummyRecommendations(DUMMY_RECOMMENDATIONS, params);
