@@ -44,6 +44,7 @@ const navItems: NavItem[] = [
 
 interface NavigationBarProps {
   currentPath: string;
+  isDemo?: boolean;
 }
 
 interface UserInfo {
@@ -51,7 +52,10 @@ interface UserInfo {
   isDemo?: boolean;
 }
 
-const NavigationBarComponent: React.FC<NavigationBarProps> = ({ currentPath }) => {
+const NavigationBarComponent: React.FC<NavigationBarProps> = ({ currentPath, isDemo = false }) => {
+  // Demo banner height offset
+  // Mobile (flex-col): ~100px, Tablet (sm+ flex-row): ~64px, Desktop (lg+ with extra info): ~88px
+  const demoOffset = isDemo ? "top-[100px] sm:top-16 lg:top-[88px]" : "top-0";
   const [user, setUser] = useState<UserInfo | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -95,7 +99,7 @@ const NavigationBarComponent: React.FC<NavigationBarProps> = ({ currentPath }) =
   return (
     <>
       {/* Desktop Navigation - Top */}
-      <nav className="hidden md:flex fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50">
+      <nav className={`hidden md:flex fixed ${demoOffset} left-0 right-0 h-16 bg-white border-b border-gray-200 z-50`}>
         <div className="flex items-center justify-between w-full max-w-7xl mx-auto px-4">
           {/* Logo */}
           <a href="/fridge" className="flex items-center hover:opacity-80 transition-opacity">
@@ -170,7 +174,7 @@ const NavigationBarComponent: React.FC<NavigationBarProps> = ({ currentPath }) =
       </nav>
 
       {/* Mobile Header - Top */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-50">
+      <nav className={`md:hidden fixed ${demoOffset} left-0 right-0 h-14 bg-white border-b border-gray-200 z-50`}>
         <div className="flex items-center justify-between h-full px-4">
           {/* Logo */}
           <a href="/fridge" className="flex items-center">
@@ -243,8 +247,9 @@ const NavigationBarComponent: React.FC<NavigationBarProps> = ({ currentPath }) =
         </div>
       </nav>
 
-      {/* Spacer for fixed navigation */}
-      <div className="h-14 md:h-16" />
+      {/* Spacer for fixed navigation (includes demo banner height when active) */}
+      {/* Mobile: 100+56=156, Tablet: 64+64=128, Desktop: 88+64=152 */}
+      <div className={isDemo ? "h-[156px] sm:h-[128px] md:h-[128px] lg:h-[152px]" : "h-14 md:h-16"} />
     </>
   );
 };

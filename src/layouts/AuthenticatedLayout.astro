@@ -1,17 +1,20 @@
 ---
 import "../styles/globals.css";
 import { NavigationBar } from "@/components/navigation";
+import { DemoModeIndicator } from "@/components/auth/DemoModeIndicator";
 
 interface Props {
   title?: string;
   description?: string;
   currentPath: string;
+  isDemo?: boolean;
 }
 
 const {
   title = "FridgePick - Inteligentne planowanie posiłków",
   description = "Zarządzaj produktami w lodówce i planuj zbilansowane posiłki",
   currentPath,
+  isDemo = false,
 } = Astro.props;
 ---
 
@@ -31,7 +34,8 @@ const {
     <title>{title}</title>
   </head>
   <body class="bg-gray-50 min-h-screen">
-    <NavigationBar client:load currentPath={currentPath} />
+    {isDemo && <DemoModeIndicator client:load />}
+    <NavigationBar client:load currentPath={currentPath} isDemo={isDemo} />
     <main class="pb-20 md:pb-4">
       <slot />
     </main>

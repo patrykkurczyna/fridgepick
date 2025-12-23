@@ -219,23 +219,14 @@ const aiRecommendationJsonSchema: JsonSchema = {
 // =============================================================================
 
 interface RecommendationsQueryParams {
-  mealCategory: DatabaseEnums["meal_category"] | null;
-  maxMissingIngredients: number;
   prioritizeExpiring: boolean;
-  limit: number;
 }
 
 function parseQueryParams(url: URL): RecommendationsQueryParams {
-  const mealCategory = url.searchParams.get("meal_category") as DatabaseEnums["meal_category"] | null;
-  const maxMissingStr = url.searchParams.get("max_missing_ingredients");
   const prioritizeExpiringStr = url.searchParams.get("prioritize_expiring");
-  const limitStr = url.searchParams.get("limit");
 
   return {
-    mealCategory: mealCategory || null,
-    maxMissingIngredients: maxMissingStr ? Math.min(5, Math.max(0, parseInt(maxMissingStr, 10))) : 3,
     prioritizeExpiring: prioritizeExpiringStr === "true",
-    limit: limitStr ? Math.min(50, Math.max(1, parseInt(limitStr, 10))) : 20,
   };
 }
 
@@ -247,21 +238,16 @@ function filterDummyRecommendations(
   recommendations: AIRecipeRecommendationDTO[],
   params: RecommendationsQueryParams
 ): AIRecipeRecommendationDTO[] {
-  let filtered = [...recommendations];
+  const filtered = [...recommendations];
 
-  if (params.mealCategory) {
-    filtered = filtered.filter((r) => r.recipe.mealCategory === params.mealCategory);
-  }
-
-  filtered = filtered.filter((r) => r.missingIngredients.length <= params.maxMissingIngredients);
-
+  // Only sort - filtering by category/maxMissing is done locally on frontend
   if (params.prioritizeExpiring) {
     filtered.sort((a, b) => b.usingExpiringIngredients.length - a.usingExpiringIngredients.length);
   } else {
     filtered.sort((a, b) => b.matchScore - a.matchScore);
   }
 
-  return filtered.slice(0, params.limit);
+  return filtered;
 }
 
 // =============================================================================
@@ -294,8 +280,7 @@ function buildUserMessage(
 
 PRZEPISY:
 ${recipesStr || "brak"}
-
-max_missing=${params.maxMissingIngredients}${params.prioritizeExpiring ? " PRIORYTET:wygasajace" : ""}`;
+${params.prioritizeExpiring ? "\nPRIORYTET: wygasajace skladniki" : ""}`;
 }
 
 // =============================================================================
@@ -440,11 +425,10 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
         };
       });
 
-      // Fetch ALL recipes with ingredients
+      // Fetch ALL recipes with ingredients (no category filter - filtering done on frontend)
       const recipeRepo = new RecipeRepository(locals.supabase);
       const allRecipesWithIngredients = await recipeRepo.findAllWithIngredients({
-        meal_category: params.mealCategory ?? undefined,
-        limit: 100, // Fetch more, then filter
+        limit: 100,
       });
 
       // Pre-filter recipes: keep only those with at least 1 ingredient matching user products
@@ -558,11 +542,8 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
 
       aiTokensUsed = aiResult.usage.totalTokens;
 
-      // Map AI response to DTO
-      recommendations = aiResult.content.recommendations
-        .filter((rec) => rec.missingIngredients.length <= params.maxMissingIngredients)
-        .slice(0, params.limit)
-        .map((rec) => {
+      // Map AI response to DTO - no filtering here, done locally on frontend
+      recommendations = aiResult.content.recommendations.map((rec) => {
           const recipeData = recipesWithIngredients.find((r) => r.id === rec.recipeId);
           return {
             recipe: {

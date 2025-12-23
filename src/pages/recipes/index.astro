@@ -1,17 +1,14 @@
 ---
 import AuthenticatedLayout from "../../layouts/AuthenticatedLayout.astro";
 import { RecipesView } from "@/components/recipes/RecipesView";
-import { DemoModeIndicator } from "@/components/auth/DemoModeIndicator";
 
 const title = "Przepisy - FridgePick";
 const currentPath = Astro.url.pathname;
 
 // Check if user is in demo mode
 const isDemo = Astro.locals.user?.user_metadata?.is_demo ?? false;
-const demoEmail = isDemo ? Astro.locals.user?.email : undefined;
 ---
 
-<AuthenticatedLayout title={title} currentPath={currentPath}>
-  {isDemo && <DemoModeIndicator client:load demoEmail={demoEmail} />}
+<AuthenticatedLayout title={title} currentPath={currentPath} isDemo={isDemo}>
   <RecipesView client:load />
 </AuthenticatedLayout>

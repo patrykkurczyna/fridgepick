@@ -15,7 +15,7 @@ export const DemoModeIndicator: React.FC = () => {
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-gradient-to-r from-yellow-100 to-yellow-50 border-b border-yellow-300 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-yellow-100 to-yellow-50 border-b border-yellow-300 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between py-3 gap-3">
           {/* Ikona i Informacja */}

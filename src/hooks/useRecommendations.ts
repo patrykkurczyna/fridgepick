@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { AIRecipeRecommendationDTO, AIRecipeRecommendationsResponse, DatabaseEnums } from "@/types";
 import type {
   UseRecommendationsReturn,
@@ -13,6 +13,71 @@ import {
   filterRecommendationsByMatchLevel,
 } from "@/types/recommendations";
 import { getAccessToken } from "@/hooks/useAuth";
+
+// =============================================================================
+// CACHE CONFIGURATION
+// =============================================================================
+
+const CACHE_KEY = "fridgepick_recommendations_cache";
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+interface CachedRecommendations {
+  recommendations: AIRecipeRecommendationDTO[];
+  generatedAt: string;
+  cachedAt: number;
+  prioritizeExpiring: boolean;
+}
+
+function getCachedRecommendations(prioritizeExpiring: boolean): CachedRecommendations | null {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const data: CachedRecommendations = JSON.parse(cached);
+
+    // Check if cache is expired
+    if (Date.now() - data.cachedAt > CACHE_TTL_MS) {
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+
+    // Check if prioritizeExpiring setting matches
+    if (data.prioritizeExpiring !== prioritizeExpiring) {
+      return null;
+    }
+
+    return data;
+  } catch {
+    sessionStorage.removeItem(CACHE_KEY);
+    return null;
+  }
+}
+
+function setCachedRecommendations(
+  recommendations: AIRecipeRecommendationDTO[],
+  generatedAt: string,
+  prioritizeExpiring: boolean
+): void {
+  try {
+    const data: CachedRecommendations = {
+      recommendations,
+      generatedAt,
+      cachedAt: Date.now(),
+      prioritizeExpiring,
+    };
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors (quota exceeded, etc.)
+  }
+}
+
+function clearCachedRecommendations(): void {
+  try {
+    sessionStorage.removeItem(CACHE_KEY);
+  } catch {
+    // Ignore
+  }
+}
 
 /** Custom error class for rate limiting */
 class RateLimitError extends Error {
@@ -37,7 +102,6 @@ export const useRecommendations = (): UseRecommendationsReturn => {
   const [error, setError] = useState<string | null>(null);
   const [cacheUsed, setCacheUsed] = useState(false);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Rate limiting state
@@ -57,11 +121,31 @@ export const useRecommendations = (): UseRecommendationsReturn => {
   // Client-side tab filter
   const [activeMatchLevel, setActiveMatchLevel] = useState<MatchLevelTab>("all");
 
+  // Track if we've already loaded from cache on mount
+  const hasLoadedFromCache = useRef(false);
+
+  /**
+   * Load recommendations from sessionStorage cache
+   */
+  const loadFromCache = useCallback(() => {
+    const cached = getCachedRecommendations(prioritizeExpiring);
+    if (cached) {
+      setRecommendations(cached.recommendations);
+      setGeneratedAt(cached.generatedAt);
+      setCacheUsed(true);
+      setLoading(false);
+      setIsInitialLoad(false);
+      return true;
+    }
+    return false;
+  }, [prioritizeExpiring]);
+
   /**
    * Fetch recommendations from API
+   * Note: Filtering by category and maxMissing is done locally, not via API
    */
   const fetchRecommendations = useCallback(
-    async (isManualRefresh = false) => {
+    async (forceRefresh = false) => {
       try {
         const jwtToken = getAccessToken();
         if (!jwtToken) {
@@ -72,24 +156,19 @@ export const useRecommendations = (): UseRecommendationsReturn => {
           return;
         }
 
-        // Determine loading state type
-        if (isManualRefresh) {
+        // On force refresh, clear cache first
+        if (forceRefresh) {
+          clearCachedRecommendations();
           setIsRefreshing(true);
-        } else if (isInitialLoad) {
+        } else {
           setLoading(true);
         }
 
-        // Build query parameters
+        // Build query parameters - only prioritize_expiring affects AI behavior
         const params = new URLSearchParams();
-
-        if (mealCategory) {
-          params.append("meal_category", mealCategory);
-        }
-        params.append("max_missing_ingredients", maxMissingIngredients.toString());
         if (prioritizeExpiring) {
           params.append("prioritize_expiring", "true");
         }
-        params.append("limit", limit.toString());
 
         const url = `/api/recipes/recommendations${params.toString() ? `?${params.toString()}` : ""}`;
 
@@ -114,8 +193,11 @@ export const useRecommendations = (): UseRecommendationsReturn => {
 
         const data: AIRecipeRecommendationsResponse = await response.json();
 
+        // Save to cache
+        setCachedRecommendations(data.recommendations, data.generatedAt, prioritizeExpiring);
+
         setRecommendations(data.recommendations);
-        setCacheUsed(data.cacheUsed);
+        setCacheUsed(false); // Fresh data, not from cache
         setGeneratedAt(data.generatedAt);
         setError(null);
         setIsRateLimited(false);
@@ -135,13 +217,31 @@ export const useRecommendations = (): UseRecommendationsReturn => {
         setIsRefreshing(false);
       }
     },
-    [mealCategory, maxMissingIngredients, prioritizeExpiring, limit, isInitialLoad]
+    [prioritizeExpiring]
   );
 
-  // Fetch recommendations on mount and when API filters change
+  // Track previous prioritizeExpiring value to detect changes
+  const prevPrioritizeExpiring = useRef(prioritizeExpiring);
+
+  // On mount: try to load from cache first, otherwise fetch from API
   useEffect(() => {
-    fetchRecommendations(false);
-  }, [fetchRecommendations, refreshTrigger]);
+    if (hasLoadedFromCache.current) return;
+    hasLoadedFromCache.current = true;
+
+    const cachedLoaded = loadFromCache();
+    if (!cachedLoaded) {
+      fetchRecommendations(false);
+    }
+  }, [loadFromCache, fetchRecommendations]);
+
+  // When prioritizeExpiring changes (not on mount), refetch from API
+  useEffect(() => {
+    if (!hasLoadedFromCache.current) return; // Skip on initial mount
+    if (prevPrioritizeExpiring.current === prioritizeExpiring) return; // No change
+
+    prevPrioritizeExpiring.current = prioritizeExpiring;
+    fetchRecommendations(true); // Force refresh with new prioritization
+  }, [prioritizeExpiring, fetchRecommendations]);
 
   // Rate limit timer effect
   useEffect(() => {
@@ -170,10 +270,16 @@ export const useRecommendations = (): UseRecommendationsReturn => {
     setActiveMatchLevel("all");
   }, []);
 
-  const handleSetPrioritizeExpiring = useCallback((value: boolean) => {
-    setPrioritizeExpiring(value);
-    setActiveMatchLevel("all");
-  }, []);
+  const handleSetPrioritizeExpiring = useCallback(
+    (value: boolean) => {
+      setPrioritizeExpiring(value);
+      setActiveMatchLevel("all");
+      // Clear cache and refetch since this affects the API query
+      clearCachedRecommendations();
+      // Fetch will happen via useEffect when prioritizeExpiring changes
+    },
+    []
+  );
 
   const handleSetActiveMatchLevel = useCallback((level: MatchLevelTab) => {
     setActiveMatchLevel(level);
@@ -188,16 +294,13 @@ export const useRecommendations = (): UseRecommendationsReturn => {
 
   const handleRefresh = useCallback(async () => {
     if (isRateLimited || isRefreshing) return;
-    setRefreshTrigger((prev) => prev + 1);
     await fetchRecommendations(true);
   }, [isRateLimited, isRefreshing, fetchRecommendations]);
 
-  const handleRetry = useCallback(() => {
-    setLoading(true);
+  const handleRetry = useCallback(async () => {
     setError(null);
-    setIsInitialLoad(true);
-    setRefreshTrigger((prev) => prev + 1);
-  }, []);
+    await fetchRecommendations(false);
+  }, [fetchRecommendations]);
 
   // Memoized filter state object
   const filters = useMemo<RecommendationsFilterState>(
@@ -210,15 +313,31 @@ export const useRecommendations = (): UseRecommendationsReturn => {
     [mealCategory, maxMissingIngredients, prioritizeExpiring, limit]
   );
 
-  // Computed values
+  // Apply category and maxMissing filters first (for counts and final filtering)
+  const preFilteredRecommendations = useMemo<AIRecipeRecommendationDTO[]>(() => {
+    let filtered = recommendations;
+
+    // Filter by meal category
+    if (mealCategory) {
+      filtered = filtered.filter((r) => r.recipe.mealCategory === mealCategory);
+    }
+
+    // Filter by max missing ingredients
+    filtered = filtered.filter((r) => r.missingIngredients.length <= maxMissingIngredients);
+
+    return filtered;
+  }, [recommendations, mealCategory, maxMissingIngredients]);
+
+  // Computed values - counts based on pre-filtered data
   const matchLevelCounts = useMemo<MatchLevelCounts>(
-    () => calculateMatchLevelCounts(recommendations),
-    [recommendations]
+    () => calculateMatchLevelCounts(preFilteredRecommendations),
+    [preFilteredRecommendations]
   );
 
+  // Apply match level tab filter on top of pre-filtered data
   const filteredRecommendations = useMemo<AIRecipeRecommendationDTO[]>(
-    () => filterRecommendationsByMatchLevel(recommendations, activeMatchLevel),
-    [recommendations, activeMatchLevel]
+    () => filterRecommendationsByMatchLevel(preFilteredRecommendations, activeMatchLevel),
+    [preFilteredRecommendations, activeMatchLevel]
   );
 
   const activeFiltersCount = useMemo(() => calculateRecommendationsActiveFiltersCount(filters), [filters]);

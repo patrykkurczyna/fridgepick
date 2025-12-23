@@ -19,10 +19,16 @@ export const RecipeDetailsView: React.FC<RecipeDetailsViewProps> = ({ recipeId }
   const { recipe, loading, error, isCooking, portions, setPortions, markAsCooked, retry } = useRecipeDetails(recipeId);
 
   /**
-   * Handle navigation back to recipes list
+   * Handle navigation back to previous page (recipes list or recommendations)
    */
   const handleBack = useCallback(() => {
-    window.location.href = "/recipes";
+    // Use browser history to go back to wherever user came from
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback to recipes list if no history
+      window.location.href = "/recipes";
+    }
   }, []);
 
   /**
