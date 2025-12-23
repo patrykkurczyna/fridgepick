@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth, getAccessToken } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Baner informacyjny dla trybu demo
@@ -9,46 +9,9 @@ import { useAuth, getAccessToken } from "@/hooks/useAuth";
  */
 export const DemoModeIndicator: React.FC = () => {
   const { logout } = useAuth();
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState<string | null>(null);
-  const [seedError, setSeedError] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await logout();
-  };
-
-  const handleSeedProducts = async () => {
-    setIsSeeding(true);
-    setSeedMessage(null);
-    setSeedError(null);
-
-    try {
-      const token = getAccessToken();
-      const response = await fetch("/api/demo/seed-products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setSeedMessage(data.message);
-        // Refresh the page after a short delay to show the new products
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        setSeedError(data.error || "Nie udało się wygenerować produktów.");
-      }
-    } catch (error) {
-      console.error("Error seeding products:", error);
-      setSeedError("Wystąpił błąd podczas generowania produktów.");
-    } finally {
-      setIsSeeding(false);
-    }
   };
 
   return (
@@ -72,38 +35,6 @@ export const DemoModeIndicator: React.FC = () => {
 
           {/* Przyciski akcji */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Button
-              onClick={handleSeedProducts}
-              disabled={isSeeding}
-              size="sm"
-              variant="outline"
-              className="border-emerald-500 text-emerald-700 hover:bg-emerald-50 cursor-pointer"
-            >
-              {isSeeding ? (
-                <span className="flex items-center gap-1">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Generuję...
-                </span>
-              ) : (
-                <>🥗 Wygeneruj lodówkę</>
-              )}
-            </Button>
-
             <Button asChild size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-sm cursor-pointer">
               <a href="/auth/register">Zarejestruj się</a>
             </Button>
@@ -118,20 +49,6 @@ export const DemoModeIndicator: React.FC = () => {
             </Button>
           </div>
         </div>
-
-        {/* Komunikaty sukcesu/błędu */}
-        {(seedMessage || seedError) && (
-          <div className="pb-2">
-            {seedMessage && (
-              <div className="text-sm text-emerald-700 bg-emerald-50 rounded px-3 py-1 inline-block">
-                ✅ {seedMessage}
-              </div>
-            )}
-            {seedError && (
-              <div className="text-sm text-red-700 bg-red-50 rounded px-3 py-1 inline-block">{seedError}</div>
-            )}
-          </div>
-        )}
 
         {/* Dodatkowe informacje (opcjonalne, na większych ekranach) */}
         <div className="hidden lg:block pb-2">

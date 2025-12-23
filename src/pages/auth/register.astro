@@ -4,10 +4,14 @@ import { RegisterForm } from "../../components/auth/RegisterForm";
 
 const title = "Rejestracja";
 
-// Check if user is already logged in
+// Check if user is already logged in (but allow demo users to register)
 if (Astro.locals.session) {
-  // User is already authenticated, redirect to fridge
-  return Astro.redirect("/fridge");
+  const isDemo = Astro.locals.session.user?.user_metadata?.is_demo === true;
+
+  // Only redirect non-demo users who are already authenticated
+  if (!isDemo) {
+    return Astro.redirect("/fridge");
+  }
 }
 ---
 

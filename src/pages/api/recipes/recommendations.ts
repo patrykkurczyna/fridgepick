@@ -269,71 +269,33 @@ function filterDummyRecommendations(
 // =============================================================================
 
 function buildSystemMessage(): string {
-  return `Jestes ekspertem kulinarnym AI. Twoim zadaniem jest analizowanie dostepnych skladnikow uzytkownika i dopasowywanie ich do przepisow z podanej listy.
+  return `Dopasuj przepisy do skladnikow uzytkownika.
 
-ZASADY DOPASOWANIA:
-1. matchScore: wartosc 0-1 okreslajaca jak dobrze przepis pasuje do dostepnych skladnikow
-   - 1.0 = wszystkie skladniki dostepne
-   - 0.9+ = brak tylko opcjonalnych skladnikow
-   - 0.7-0.9 = brak 1-2 wymaganych skladnikow
-   - 0.5-0.7 = brak 3+ wymaganych skladnikow
-   - <0.5 = brakuje wiekszosci skladnikow
+matchScore: 0-1 (1=wszystko, 0.9+=brak opcjonalnych, 0.7-0.9=brak 1-2, <0.7=brak 3+)
+matchLevel: "idealny"(>=0.9), "prawie idealny"(0.7-0.9), "wymaga dokupienia"(<0.7)
 
-2. matchLevel:
-   - "idealny": wszystkie wymagane skladniki dostepne (matchScore >= 0.9)
-   - "prawie idealny": brak 1-2 wymaganych skladnikow (matchScore 0.7-0.9)
-   - "wymaga dokupienia": brak 3+ wymaganych skladnikow (matchScore < 0.7)
-
-3. PRIORYTETYZACJA:
-   - Priorytetowo wybieraj przepisy wykorzystujace skladniki z KROTKA DATA WAZNOSCI
-   - Preferuj przepisy gdzie mozna zastapic brakujace skladniki podobnymi dostepnymi
-
-4. WAZNE:
-   - Analizuj TYLKO przepisy z podanej listy (uzyj dokladnych ID)
-   - Nie wymyslaj nowych przepisow
-   - Odpowiadaj TYLKO w formacie JSON zgodnym ze schema`;
+Priorytet: skladniki wygasajace. Uzyj TYLKO podanych ID przepisow. JSON only.`;
 }
 
 function buildUserMessage(
-  userProducts: { name: string; quantity: number; unit: string; daysUntilExpiry: number | null }[],
+  userProducts: { name: string; daysUntilExpiry: number | null }[],
   recipes: { id: string; name: string; ingredients: string[] }[],
   params: RecommendationsQueryParams
 ): string {
-  const productsSection =
-    userProducts.length > 0
-      ? userProducts
-          .map((p) => {
-            const expiryInfo = p.daysUntilExpiry !== null ? ` (wygasa za ${p.daysUntilExpiry} dni)` : "";
-            return `- ${p.name}: ${p.quantity} ${p.unit}${expiryInfo}`;
-          })
-          .join("\n")
-      : "Brak produktow w lodowce";
+  // Compact product list: name (days) or just name
+  const products = userProducts
+    .map((p) => (p.daysUntilExpiry !== null && p.daysUntilExpiry <= 5 ? `${p.name}(${p.daysUntilExpiry}d)` : p.name))
+    .join(", ");
 
-  const recipesSection =
-    recipes.length > 0
-      ? recipes.map((r) => `- ID: "${r.id}", Nazwa: "${r.name}", Skladniki: ${r.ingredients.join(", ")}`).join("\n")
-      : "Brak dostepnych przepisow";
+  // Compact recipe list: ID|name|ingredients
+  const recipesStr = recipes.map((r) => `${r.id}|${r.name}|${r.ingredients.join(",")}`).join("\n");
 
-  let constraints = `\nOGRANICZENIA:
-- Maksymalna liczba brakujacych skladnikow: ${params.maxMissingIngredients}
-- Maksymalna liczba rekomendacji: ${params.limit}`;
+  return `PRODUKTY: ${products || "brak"}
 
-  if (params.mealCategory) {
-    constraints += `\n- Filtruj tylko kategorie posilku: ${params.mealCategory}`;
-  }
+PRZEPISY:
+${recipesStr || "brak"}
 
-  if (params.prioritizeExpiring) {
-    constraints += `\n- PRIORYTET: przepisy wykorzystujace skladniki wygasajace w ciagu 3 dni`;
-  }
-
-  return `PRODUKTY UZYTKOWNIKA:
-${productsSection}
-
-DOSTEPNE PRZEPISY:
-${recipesSection}
-${constraints}
-
-Przeanalizuj produkty uzytkownika i dopasuj je do przepisow. Zwroc rekomendacje posortowane od najlepszego dopasowania.`;
+max_missing=${params.maxMissingIngredients}${params.prioritizeExpiring ? " PRIORYTET:wygasajace" : ""}`;
 }
 
 // =============================================================================
@@ -445,9 +407,20 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
         isDemo: user.isDemo,
       });
 
-      // Fetch user products
+      // Fetch ALL user products (needed for accurate matching)
       const userProductRepo = new UserProductRepository(locals.supabase);
-      const userProducts = await userProductRepo.findByUserId(user.id, { limit: 100 });
+      const userProducts = await userProductRepo.findByUserId(user.id, { limit: 200 });
+
+      // Create a set of normalized product names for fast lookup
+      const userProductNames = new Set(
+        userProducts.map((p) =>
+          p.name
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+        )
+      );
 
       // Calculate days until expiry for each product
       const productsWithExpiry = userProducts.map((p) => {
@@ -467,15 +440,87 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
         };
       });
 
-      // Fetch recipes with ingredients in optimized batch query (2 queries instead of N+1)
+      // Fetch ALL recipes with ingredients
       const recipeRepo = new RecipeRepository(locals.supabase);
-      const dbRecipesWithIngredients = await recipeRepo.findAllWithIngredients({
+      const allRecipesWithIngredients = await recipeRepo.findAllWithIngredients({
         meal_category: params.mealCategory ?? undefined,
-        limit: 50,
+        limit: 100, // Fetch more, then filter
+      });
+
+      // Pre-filter recipes: keep only those with at least 1 ingredient matching user products
+      // This reduces the prompt size while keeping relevant recipes
+      const relevantRecipes = allRecipesWithIngredients.filter((recipe) => {
+        const matchCount = recipe.ingredients.filter((ing) => {
+          const normalizedIngredient = ing.ingredient_name
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+          // Check if any user product contains the ingredient or vice versa
+          for (const productName of userProductNames) {
+            if (productName.includes(normalizedIngredient) || normalizedIngredient.includes(productName)) {
+              return true;
+            }
+            // Check first word match (e.g., "jajka" matches "jajka kurze L")
+            const ingredientFirstWord = normalizedIngredient.split(" ")[0];
+            const productFirstWord = productName.split(" ")[0];
+            if (ingredientFirstWord === productFirstWord) {
+              return true;
+            }
+          }
+          return false;
+        }).length;
+
+        // Keep recipes with at least 1 matching ingredient
+        return matchCount >= 1;
+      });
+
+      // Sort by match count and take 3 best from each category (12 total)
+      const MEAL_CATEGORIES = ["śniadanie", "obiad", "kolacja", "przekąska"] as const;
+      const recipesWithMatchCount = relevantRecipes.map((recipe) => {
+        const matchCount = recipe.ingredients.filter((ing) => {
+          const normalizedIngredient = ing.ingredient_name
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          for (const productName of userProductNames) {
+            if (productName.includes(normalizedIngredient) || normalizedIngredient.includes(productName)) {
+              return true;
+            }
+            const ingredientFirstWord = normalizedIngredient.split(" ")[0];
+            const productFirstWord = productName.split(" ")[0];
+            if (ingredientFirstWord === productFirstWord) {
+              return true;
+            }
+          }
+          return false;
+        }).length;
+        return { recipe, matchCount };
+      });
+
+      // Take 3 best recipes from each category
+      const sortedRecipes: typeof relevantRecipes = [];
+      for (const category of MEAL_CATEGORIES) {
+        const categoryRecipes = recipesWithMatchCount
+          .filter((r) => r.recipe.meal_category === category)
+          .sort((a, b) => b.matchCount - a.matchCount)
+          .slice(0, 3)
+          .map((r) => r.recipe);
+        sortedRecipes.push(...categoryRecipes);
+      }
+
+      console.info("Recommendations: Pre-filtered recipes", {
+        requestId,
+        totalRecipes: allRecipesWithIngredients.length,
+        relevantRecipes: relevantRecipes.length,
+        sentToAI: sortedRecipes.length,
+        userProducts: userProducts.length,
       });
 
       // Transform for AI consumption
-      const recipesWithIngredients = dbRecipesWithIngredients.map((recipe) => ({
+      const recipesWithIngredients = sortedRecipes.map((recipe) => ({
         id: recipe.id,
         name: recipe.name,
         mealCategory: recipe.meal_category,
@@ -488,7 +533,7 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
       const openRouter = getOpenRouterService(runtimeEnv);
       const systemMessage = buildSystemMessage();
       const userMessage = buildUserMessage(
-        productsWithExpiry,
+        productsWithExpiry.map((p) => ({ name: p.name, daysUntilExpiry: p.daysUntilExpiry })),
         recipesWithIngredients.map((r) => ({ id: r.id, name: r.name, ingredients: r.ingredients })),
         params
       );
@@ -505,9 +550,10 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
           },
           validator: AIRecommendationSchema,
         },
-        temperature: 0.3,
-        maxTokens: 2048,
+        temperature: 0, // Deterministic for speed
+        maxTokens: 1000, // 12 recipes need less tokens
         userId: user.id,
+        timeout: 30000, // 30 seconds should be enough now
       });
 
       aiTokensUsed = aiResult.usage.totalTokens;

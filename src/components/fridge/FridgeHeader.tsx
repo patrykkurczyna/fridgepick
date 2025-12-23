@@ -13,14 +13,15 @@ interface FridgeHeaderProps {
  */
 export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct, onProductsGenerated, onClearFridge }) => {
   const [isSeeding, setIsSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   /**
    * Handle generating sample products
    */
   const handleSeedProducts = async () => {
     setIsSeeding(true);
-    setSeedMessage(null);
+    setMessage(null);
 
     try {
       const token = getAccessToken();
@@ -35,7 +36,7 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct, onProd
       const data = await response.json();
 
       if (data.success) {
-        setSeedMessage({ type: "success", text: data.message });
+        setMessage({ type: "success", text: data.message });
         // Refresh the page or call callback after a short delay
         setTimeout(() => {
           if (onProductsGenerated) {
@@ -45,24 +46,56 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct, onProd
           }
         }, 1500);
       } else {
-        setSeedMessage({ type: "error", text: data.error || "Nie udało się wygenerować produktów." });
+        setMessage({ type: "error", text: data.error || "Nie udało się wygenerować produktów." });
       }
     } catch {
-      setSeedMessage({ type: "error", text: "Wystąpił błąd podczas generowania produktów." });
+      setMessage({ type: "error", text: "Wystąpił błąd podczas generowania produktów." });
     } finally {
       setIsSeeding(false);
     }
   };
 
   /**
-   * Handle clearing fridge
+   * Handle clearing fridge - delete all user products
    */
-  const handleClearFridge = () => {
-    if (onClearFridge) {
-      onClearFridge();
-    } else {
-      // TODO: Implement clear fridge functionality
-      alert("Funkcja wyczyść lodówkę - do zaimplementowania");
+  const handleClearFridge = async () => {
+    // Confirm before deleting
+    if (!confirm("Czy na pewno chcesz usunąć WSZYSTKIE produkty z lodówki? Tej operacji nie można cofnąć.")) {
+      return;
+    }
+
+    setIsClearing(true);
+    setMessage(null);
+
+    try {
+      const token = getAccessToken();
+      const response = await fetch("/api/user-products/clear?confirm=true", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage({ type: "success", text: data.message });
+        // Refresh after short delay
+        setTimeout(() => {
+          if (onClearFridge) {
+            onClearFridge();
+          } else {
+            window.location.reload();
+          }
+        }, 1500);
+      } else {
+        setMessage({ type: "error", text: data.error || "Nie udało się wyczyścić lodówki." });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Wystąpił błąd podczas czyszczenia lodówki." });
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -80,10 +113,35 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct, onProd
             {/* Clear Fridge Button */}
             <button
               onClick={handleClearFridge}
-              className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium cursor-pointer"
+              disabled={isClearing}
+              className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <TrashIcon className="w-5 h-5" />
-              Wyczyść lodówkę
+              {isClearing ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Czyszczę...
+                </>
+              ) : (
+                <>
+                  <TrashIcon className="w-5 h-5" />
+                  Wyczyść lodówkę
+                </>
+              )}
             </button>
 
             {/* Generate Button */}
@@ -131,15 +189,15 @@ export const FridgeHeader: React.FC<FridgeHeaderProps> = ({ onAddProduct, onProd
           </div>
         </div>
 
-        {/* Seed message */}
-        {seedMessage && (
+        {/* Status message */}
+        {message && (
           <div
             className={`mt-3 text-sm rounded-lg px-3 py-2 ${
-              seedMessage.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+              message.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
             }`}
           >
-            {seedMessage.type === "success" ? "✅ " : "❌ "}
-            {seedMessage.text}
+            {message.type === "success" ? "✅ " : "❌ "}
+            {message.text}
           </div>
         )}
       </div>
