@@ -102,7 +102,6 @@ export const useRecommendations = (): UseRecommendationsReturn => {
   const [error, setError] = useState<string | null>(null);
   const [cacheUsed, setCacheUsed] = useState(false);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Rate limiting state
   const [isRateLimited, setIsRateLimited] = useState(false);
@@ -134,7 +133,6 @@ export const useRecommendations = (): UseRecommendationsReturn => {
       setGeneratedAt(cached.generatedAt);
       setCacheUsed(true);
       setLoading(false);
-      setIsInitialLoad(false);
       return true;
     }
     return false;
@@ -149,7 +147,6 @@ export const useRecommendations = (): UseRecommendationsReturn => {
       try {
         const jwtToken = getAccessToken();
         if (!jwtToken) {
-          console.warn("No access token available, skipping fetch");
           setRecommendations([]);
           setLoading(false);
           setIsRefreshing(false);
@@ -204,7 +201,6 @@ export const useRecommendations = (): UseRecommendationsReturn => {
         setRateLimitResetTime(null);
         setLoading(false);
         setIsRefreshing(false);
-        setIsInitialLoad(false);
       } catch (err) {
         if (err instanceof RateLimitError) {
           setIsRateLimited(true);
@@ -270,16 +266,13 @@ export const useRecommendations = (): UseRecommendationsReturn => {
     setActiveMatchLevel("all");
   }, []);
 
-  const handleSetPrioritizeExpiring = useCallback(
-    (value: boolean) => {
-      setPrioritizeExpiring(value);
-      setActiveMatchLevel("all");
-      // Clear cache and refetch since this affects the API query
-      clearCachedRecommendations();
-      // Fetch will happen via useEffect when prioritizeExpiring changes
-    },
-    []
-  );
+  const handleSetPrioritizeExpiring = useCallback((value: boolean) => {
+    setPrioritizeExpiring(value);
+    setActiveMatchLevel("all");
+    // Clear cache and refetch since this affects the API query
+    clearCachedRecommendations();
+    // Fetch will happen via useEffect when prioritizeExpiring changes
+  }, []);
 
   const handleSetActiveMatchLevel = useCallback((level: MatchLevelTab) => {
     setActiveMatchLevel(level);

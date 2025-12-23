@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { ProductDTO, SortOption } from "@/types/fridge";
 import type { UserProductsResponse } from "@/types";
 import { getAccessToken } from "@/hooks/useAuth";
@@ -12,7 +12,7 @@ export const useRealFridgeProducts = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const isInitialLoadRef = useRef(true);
   const [lastFetchTime, setLastFetchTime] = useState(new Date());
 
   // Search state
@@ -38,7 +38,6 @@ export const useRealFridgeProducts = () => {
         // Get access token dynamically from localStorage (set by useAuth)
         const jwtToken = getAccessToken();
         if (!jwtToken) {
-          console.warn("No access token available, skipping fetch");
           setProducts([]);
           setLoading(false);
           setIsSearching(false);
@@ -46,7 +45,7 @@ export const useRealFridgeProducts = () => {
         }
 
         // Determine if this is a search or initial load
-        const isSearchAction = !isInitialLoad && debouncedSearch !== "";
+        const isSearchAction = !isInitialLoadRef.current && debouncedSearch !== "";
 
         if (isSearchAction) {
           setIsSearching(true);
@@ -96,7 +95,7 @@ export const useRealFridgeProducts = () => {
         setError(null);
         setLoading(false);
         setIsSearching(false);
-        setIsInitialLoad(false);
+        isInitialLoadRef.current = false;
         setLastFetchTime(new Date());
       } catch (err) {
         setError(err instanceof Error ? err.message : "Nie udało się załadować produktów");
@@ -124,7 +123,7 @@ export const useRealFridgeProducts = () => {
   const retry = useCallback(() => {
     setLoading(true);
     setError(null);
-    setIsInitialLoad(true);
+    isInitialLoadRef.current = true;
     // Re-trigger fetch by incrementing refreshTrigger
     setRefreshTrigger((prev) => prev + 1);
   }, []);

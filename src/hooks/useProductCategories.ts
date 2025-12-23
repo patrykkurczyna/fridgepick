@@ -78,10 +78,9 @@ export const useProductCategories = () => {
       // Cache the results
       localStorage.setItem(cacheKey, JSON.stringify(data.categories));
       localStorage.setItem(cacheTimestampKey, String(timestamp));
-    } catch {
-      console.error("Error fetching product categories:", error);
+    } catch (err) {
       setLoading(false);
-      setError(error instanceof Error ? error.message : "Unknown error occurred");
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
     }
   }, [isAuthenticated, user?.accessToken]);
 

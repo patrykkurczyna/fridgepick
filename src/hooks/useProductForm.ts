@@ -4,21 +4,21 @@ import type { ProductFormData, ValidationErrors, LoadingState, ValidationResult 
 import type { CreateUserProductRequest, UpdateUserProductRequest, UserProductResponse } from "@/types";
 import { UNIT_TYPES } from "@/types";
 
+// Initial form data - defined outside hook to maintain stable reference
+const INITIAL_FORM_DATA: ProductFormData = {
+  name: "",
+  categoryId: null,
+  quantity: null,
+  unit: null,
+  expiresAt: null,
+};
+
 /**
  * Custom hook for managing product form state and validation
  */
 export const useProductForm = (mode: "create" | "edit", productId?: string) => {
-  // Initial form data
-  const initialFormData: ProductFormData = {
-    name: "",
-    categoryId: null,
-    quantity: null,
-    unit: null,
-    expiresAt: null,
-  };
-
-  const [formData, setFormData] = useState<ProductFormData>(initialFormData);
-  const [originalData, setOriginalData] = useState<ProductFormData>(initialFormData);
+  const [formData, setFormData] = useState<ProductFormData>(INITIAL_FORM_DATA);
+  const [originalData, setOriginalData] = useState<ProductFormData>(INITIAL_FORM_DATA);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<keyof ProductFormData>>(new Set());
   const [loadingState, setLoadingState] = useState<LoadingState>({
@@ -190,9 +190,8 @@ export const useProductForm = (mode: "create" | "edit", productId?: string) => {
       setOriginalData(productData);
       setValidationErrors({});
       setSubmitError(null);
-    } catch {
-      console.error("Error loading product:", error);
-      setSubmitError(error instanceof Error ? error.message : "Błąd podczas ładowania produktu");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Błąd podczas ładowania produktu");
     } finally {
       setLoadingState((prev) => ({ ...prev, form: false }));
     }
@@ -255,9 +254,8 @@ export const useProductForm = (mode: "create" | "edit", productId?: string) => {
       }
 
       return true;
-    } catch {
-      console.error("Error submitting form:", error);
-      setSubmitError(error instanceof Error ? error.message : "Błąd podczas zapisywania");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Błąd podczas zapisywania");
       return false;
     } finally {
       setLoadingState((prev) => ({ ...prev, submit: false }));
@@ -292,9 +290,8 @@ export const useProductForm = (mode: "create" | "edit", productId?: string) => {
       }
 
       return true;
-    } catch {
-      console.error("Error deleting product:", error);
-      setSubmitError(error instanceof Error ? error.message : "Błąd podczas usuwania");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Błąd podczas usuwania");
       return false;
     } finally {
       setLoadingState((prev) => ({ ...prev, delete: false }));
@@ -305,7 +302,7 @@ export const useProductForm = (mode: "create" | "edit", productId?: string) => {
    * Reset form to initial state
    */
   const resetForm = useCallback(() => {
-    setFormData(initialFormData);
+    setFormData(INITIAL_FORM_DATA);
     setValidationErrors({});
     setSubmitError(null);
   }, []);

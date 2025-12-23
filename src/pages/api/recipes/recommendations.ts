@@ -544,29 +544,29 @@ export const GET: APIRoute = async ({ locals, request, url }) => {
 
       // Map AI response to DTO - no filtering here, done locally on frontend
       recommendations = aiResult.content.recommendations.map((rec) => {
-          const recipeData = recipesWithIngredients.find((r) => r.id === rec.recipeId);
-          return {
-            recipe: {
-              id: rec.recipeId,
-              name: recipeData?.name ?? "Unknown",
-              mealCategory: (recipeData?.mealCategory ?? "obiad") as DatabaseEnums["meal_category"],
-              prepTimeMinutes: recipeData?.prepTimeMinutes ?? 30,
-              nutritionalValues: recipeData?.nutritionalValues
-                ? {
-                    calories: (recipeData.nutritionalValues as Record<string, number>).calories ?? 0,
-                    protein: (recipeData.nutritionalValues as Record<string, number>).protein,
-                    carbs: (recipeData.nutritionalValues as Record<string, number>).carbs,
-                    fat: (recipeData.nutritionalValues as Record<string, number>).fat,
-                  }
-                : null,
-            },
-            matchScore: rec.matchScore,
-            matchLevel: rec.matchLevel as RecipeMatchLevel,
-            availableIngredients: rec.availableIngredients,
-            missingIngredients: rec.missingIngredients,
-            usingExpiringIngredients: rec.usingExpiringIngredients,
-          };
-        });
+        const recipeData = recipesWithIngredients.find((r) => r.id === rec.recipeId);
+        return {
+          recipe: {
+            id: rec.recipeId,
+            name: recipeData?.name ?? "Unknown",
+            mealCategory: (recipeData?.mealCategory ?? "obiad") as DatabaseEnums["meal_category"],
+            prepTimeMinutes: recipeData?.prepTimeMinutes ?? 30,
+            nutritionalValues: recipeData?.nutritionalValues
+              ? {
+                  calories: (recipeData.nutritionalValues as Record<string, number>).calories ?? 0,
+                  protein: (recipeData.nutritionalValues as Record<string, number>).protein,
+                  carbs: (recipeData.nutritionalValues as Record<string, number>).carbs,
+                  fat: (recipeData.nutritionalValues as Record<string, number>).fat,
+                }
+              : null,
+          },
+          matchScore: rec.matchScore,
+          matchLevel: rec.matchLevel as RecipeMatchLevel,
+          availableIngredients: rec.availableIngredients,
+          missingIngredients: rec.missingIngredients,
+          usingExpiringIngredients: rec.usingExpiringIngredients,
+        };
+      });
 
       // Sort by match score or expiring priority
       if (params.prioritizeExpiring) {

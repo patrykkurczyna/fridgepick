@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { RecipeDTO, RecipesResponse } from "@/types";
 import type { RecipesFiltersState, RecipesPaginationState, MealCategory, ProteinType } from "@/types/recipes";
 import { calculateActiveFiltersCount } from "@/types/recipes";
@@ -41,7 +41,7 @@ export const useRecipes = (): UseRecipesReturn => {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const isInitialLoadRef = useRef(true);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,7 +73,6 @@ export const useRecipes = (): UseRecipesReturn => {
       try {
         const jwtToken = getAccessToken();
         if (!jwtToken) {
-          console.warn("No access token available, skipping fetch");
           setRecipes([]);
           setLoading(false);
           setIsSearching(false);
@@ -82,7 +81,7 @@ export const useRecipes = (): UseRecipesReturn => {
 
         // Determine loading state type
         const isSearchAction =
-          !isInitialLoad && (debouncedSearch !== "" || mealCategory !== null || proteinType !== null);
+          !isInitialLoadRef.current && (debouncedSearch !== "" || mealCategory !== null || proteinType !== null);
 
         if (isSearchAction) {
           setIsSearching(true);
@@ -134,7 +133,7 @@ export const useRecipes = (): UseRecipesReturn => {
         setError(null);
         setLoading(false);
         setIsSearching(false);
-        setIsInitialLoad(false);
+        isInitialLoadRef.current = false;
       } catch (err) {
         setError(err instanceof Error ? err.message : "Nie udało się załadować przepisów");
         setLoading(false);
@@ -175,7 +174,7 @@ export const useRecipes = (): UseRecipesReturn => {
   const retry = useCallback(() => {
     setLoading(true);
     setError(null);
-    setIsInitialLoad(true);
+    isInitialLoadRef.current = true;
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 

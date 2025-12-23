@@ -10,7 +10,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   error,
   placeholder = "Wybierz datę ważności...",
 }) => {
-  const [isFocused, setIsFocused] = React.useState(false);
   // Format date for input (YYYY-MM-DD)
   const formatDateForInput = (dateString: string | null): string => {
     if (!dateString) return "";
@@ -33,34 +32,24 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   // Get minimum date (today)
   const today = new Date().toISOString().split("T")[0];
 
+  const hasValue = !!value;
+
   return (
     <div className="relative">
       <input
         type="date"
         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer ${
           error ? "border-red-300" : "border-gray-300"
-        }`}
-        style={
-          !value
-            ? {
-                color: "transparent",
-              }
-            : {}
-        }
+        } ${!hasValue ? "text-gray-400" : "text-gray-900"}`}
         value={formatDateForInput(value)}
         onChange={handleDateChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         min={today}
         aria-label="Data ważności produktu"
         aria-describedby={error ? "date-error" : undefined}
       />
 
-      {!value && !isFocused && (
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <span className="text-gray-400 text-sm">{placeholder}</span>
-        </div>
-      )}
+      {/* Helper text below the input */}
+      {!hasValue && <p className="mt-1 text-xs text-gray-500">{placeholder}</p>}
     </div>
   );
 };
