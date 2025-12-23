@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { RecipeRepository } from "../../../repositories/RecipeRepository";
+import { UserProductRepository } from "../../../repositories/UserProductRepository";
 import { RecipeService, RecipeServiceError } from "../../../services/RecipeService";
 import { requireDemoFriendlyAuth, checkUserRateLimit } from "../../../middleware/auth";
 import { HttpStatus, ErrorCode, ApiError, withTimeout, createErrorResponse } from "../../../middleware/errorHandler";
@@ -9,12 +10,13 @@ import { HttpStatus, ErrorCode, ApiError, withTimeout, createErrorResponse } fro
  *
  * Retrieves a single recipe by ID with its ingredients.
  * Includes information about whether the user can cook the recipe
- * based on their inventory (TODO: implement inventory check).
+ * based on their inventory.
  *
  * Features:
  * - JWT authentication required
- * - Recipe ingredient list
- * - Can-cook status
+ * - Recipe ingredient list with user availability
+ * - Inventory availability check against user's products
+ * - Can-cook status based on ingredient availability
  * - Missing ingredients list
  */
 export const GET: APIRoute = async ({ locals, request, params }) => {
@@ -94,14 +96,15 @@ export const GET: APIRoute = async ({ locals, request, params }) => {
       },
     });
 
-    // Initialize service layer
-    const repository = new RecipeRepository(authenticatedSupabase);
-    const service = new RecipeService(repository);
+    // Initialize service layer with user product repository for inventory check
+    const recipeRepository = new RecipeRepository(authenticatedSupabase);
+    const userProductRepository = new UserProductRepository(authenticatedSupabase);
+    const service = new RecipeService(recipeRepository, userProductRepository);
 
     // Get recipe with timeout protection
-    // TODO: Pass user.id when inventory availability check is implemented
+    // Pass user.id to enable inventory availability check
     const recipeResponse = await withTimeout(
-      service.getRecipeById(recipeId),
+      service.getRecipeById(recipeId, user.id),
       5000, // 5 seconds timeout
       "Recipe detail query timeout"
     );

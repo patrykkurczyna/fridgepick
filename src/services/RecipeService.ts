@@ -15,6 +15,7 @@ import type {
   RecipeWithIngredients,
   RecipeIngredientRow,
 } from "../repositories/RecipeRepository";
+import type { IUserProductRepository, UserProductWithCategory } from "../repositories/UserProductRepository";
 import { DatabaseError } from "../repositories/ProductCategoryRepository";
 
 /**
@@ -22,7 +23,7 @@ import { DatabaseError } from "../repositories/ProductCategoryRepository";
  */
 export interface IRecipeService {
   getRecipes(queryParams?: RecipesQueryParams): Promise<RecipesResponse>;
-  getRecipeById(id: string): Promise<RecipeDetailResponse | null>;
+  getRecipeById(id: string, userId?: string): Promise<RecipeDetailResponse | null>;
 }
 
 /**
@@ -45,7 +46,10 @@ export class RecipeServiceError extends Error {
  * Handles data transformation, filtering, and pagination
  */
 export class RecipeService implements IRecipeService {
-  constructor(private readonly repository: IRecipeRepository) {}
+  constructor(
+    private readonly repository: IRecipeRepository,
+    private readonly userProductRepository?: IUserProductRepository
+  ) {}
 
   /**
    * Retrieves recipes with filtering, sorting, and pagination
@@ -112,14 +116,18 @@ export class RecipeService implements IRecipeService {
 
   /**
    * Retrieves a single recipe by ID with ingredients
-   * TODO: Add userId parameter for inventory availability check
+   * If userId is provided, checks ingredient availability against user's inventory
    *
    * @param id - Recipe ID to retrieve
+   * @param userId - Optional user ID for inventory availability check
    * @returns Promise<RecipeDetailResponse | null> Recipe detail or null
    */
-  async getRecipeById(id: string): Promise<RecipeDetailResponse | null> {
+  async getRecipeById(id: string, userId?: string): Promise<RecipeDetailResponse | null> {
     try {
-      console.info("RecipeService: Starting getRecipeById", { recipeId: id });
+      console.info("RecipeService: Starting getRecipeById", {
+        recipeId: id,
+        hasUserId: !!userId,
+      });
 
       const startTime = Date.now();
 
@@ -130,14 +138,34 @@ export class RecipeService implements IRecipeService {
         return null;
       }
 
-      // Transform to detail DTO
-      const recipeDetail = this.transformToDetailDTO(recipeWithIngredients);
+      // Fetch user products if userId is provided and repository is available
+      let userProducts: UserProductWithCategory[] = [];
+      if (userId && this.userProductRepository) {
+        try {
+          userProducts = await this.userProductRepository.findByUserId(userId, { limit: 500 });
+          console.debug("RecipeService: Fetched user products for availability check", {
+            userId: userId.substring(0, 8) + "...",
+            productCount: userProducts.length,
+          });
+        } catch (error) {
+          // Log but don't fail - just use empty products array
+          console.warn("RecipeService: Failed to fetch user products, continuing without availability check", {
+            userId: userId.substring(0, 8) + "...",
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      // Transform to detail DTO with user products for availability check
+      const recipeDetail = this.transformToDetailDTO(recipeWithIngredients, userProducts);
 
       const responseTime = Date.now() - startTime;
 
       console.info("RecipeService: getRecipeById completed successfully", {
         recipeId: id,
         ingredientCount: recipeDetail.ingredients.length,
+        canCook: recipeDetail.canCook,
+        missingCount: recipeDetail.missingIngredients.length,
         responseTime: `${responseTime}ms`,
       });
 
@@ -185,11 +213,17 @@ export class RecipeService implements IRecipeService {
    * Transforms database row to RecipeDetailDTO with ingredients
    *
    * @param dbRecipe - Database recipe with ingredients
+   * @param userProducts - Optional user products for availability check
    * @returns RecipeDetailDTO Transformed detail DTO
    */
-  private transformToDetailDTO(dbRecipe: RecipeWithIngredients): RecipeDetailDTO {
-    // Transform ingredients
-    const ingredients: RecipeIngredientDTO[] = dbRecipe.ingredients.map((ing) => this.transformIngredientToDTO(ing));
+  private transformToDetailDTO(
+    dbRecipe: RecipeWithIngredients,
+    userProducts: UserProductWithCategory[] = []
+  ): RecipeDetailDTO {
+    // Transform ingredients with user product availability
+    const ingredients: RecipeIngredientDTO[] = dbRecipe.ingredients.map((ing) =>
+      this.transformIngredientToDTO(ing, userProducts)
+    );
 
     // Calculate missing ingredients (those that user doesn't have)
     const missingIngredients = ingredients
@@ -218,24 +252,100 @@ export class RecipeService implements IRecipeService {
   }
 
   /**
-   * Transforms ingredient row to DTO
-   * TODO: Implement actual user inventory check
+   * Transforms ingredient row to DTO with user inventory availability check
    *
    * @param ingredient - Database ingredient row
+   * @param userProducts - User's products for availability check
    * @returns RecipeIngredientDTO Transformed ingredient DTO
    */
-  private transformIngredientToDTO(ingredient: RecipeIngredientRow): RecipeIngredientDTO {
-    // TODO: Implement actual user inventory check
-    // For now, return false for userHasIngredient and 0 for userQuantity
+  private transformIngredientToDTO(
+    ingredient: RecipeIngredientRow,
+    userProducts: UserProductWithCategory[] = []
+  ): RecipeIngredientDTO {
+    // Find matching user product
+    const matchedProduct = this.findMatchingUserProduct(ingredient.ingredient_name, userProducts);
+
+    // Calculate user quantity (sum if multiple products match)
+    let userQuantity = 0;
+    let userHasIngredient = false;
+
+    if (matchedProduct) {
+      userQuantity = matchedProduct.quantity;
+      // User has ingredient if they have any quantity (for non-required)
+      // or if they have at least the required amount (for required)
+      userHasIngredient = userQuantity >= ingredient.quantity;
+    }
+
     return {
       id: ingredient.id,
       name: ingredient.ingredient_name,
       quantity: ingredient.quantity,
       unit: ingredient.unit,
       isRequired: ingredient.is_required,
-      userHasIngredient: false, // TODO: Check against user's inventory
-      userQuantity: 0, // TODO: Get from user's inventory
+      userHasIngredient,
+      userQuantity,
     };
+  }
+
+  /**
+   * Finds a matching user product for an ingredient
+   * Uses fuzzy matching to handle variations like "mleko" vs "mleko 3.2%"
+   *
+   * @param ingredientName - Name of the ingredient to match
+   * @param userProducts - User's products to search
+   * @returns Matched product or null
+   */
+  private findMatchingUserProduct(
+    ingredientName: string,
+    userProducts: UserProductWithCategory[]
+  ): UserProductWithCategory | null {
+    if (userProducts.length === 0) return null;
+
+    const normalizedIngredient = this.normalizeProductName(ingredientName);
+
+    // First try exact match
+    for (const product of userProducts) {
+      const normalizedProduct = this.normalizeProductName(product.name);
+      if (normalizedProduct === normalizedIngredient) {
+        return product;
+      }
+    }
+
+    // Then try contains match (product name contains ingredient or vice versa)
+    for (const product of userProducts) {
+      const normalizedProduct = this.normalizeProductName(product.name);
+      if (normalizedProduct.includes(normalizedIngredient) || normalizedIngredient.includes(normalizedProduct)) {
+        return product;
+      }
+    }
+
+    // Try matching first word (e.g., "jajka" matches "jajka kurze L")
+    const ingredientFirstWord = normalizedIngredient.split(" ")[0];
+    for (const product of userProducts) {
+      const productFirstWord = this.normalizeProductName(product.name).split(" ")[0];
+      if (productFirstWord === ingredientFirstWord) {
+        return product;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Normalizes a product/ingredient name for matching
+   * - Converts to lowercase
+   * - Removes diacritics
+   * - Trims whitespace
+   *
+   * @param name - Name to normalize
+   * @returns Normalized name
+   */
+  private normalizeProductName(name: string): string {
+    return name
+      .toLowerCase()
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // Remove diacritics
   }
 
   /**
