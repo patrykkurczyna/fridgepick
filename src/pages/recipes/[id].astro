@@ -1,0 +1,25 @@
+---
+import AuthenticatedLayout from "../../layouts/AuthenticatedLayout.astro";
+import { RecipeDetailsView } from "@/components/recipe-details/RecipeDetailsView";
+import { DemoModeIndicator } from "@/components/auth/DemoModeIndicator";
+
+// Get the recipe ID from the URL params
+const { id } = Astro.params;
+
+// Validate that id exists
+if (!id) {
+  return Astro.redirect("/recipes");
+}
+
+const title = "Szczegóły przepisu - FridgePick";
+const currentPath = Astro.url.pathname;
+
+// Check if user is in demo mode
+const isDemo = Astro.locals.user?.user_metadata?.is_demo ?? false;
+const demoEmail = isDemo ? Astro.locals.user?.email : undefined;
+---
+
+<AuthenticatedLayout title={title} currentPath={currentPath}>
+  {isDemo && <DemoModeIndicator client:load demoEmail={demoEmail} />}
+  <RecipeDetailsView client:load recipeId={id} />
+</AuthenticatedLayout>
