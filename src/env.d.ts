@@ -33,6 +33,14 @@ interface ImportMetaEnv {
   readonly SUPABASE_KEY: string;
   readonly OPENROUTER_API_KEY: string;
 
+  /**
+   * AI Recommendations feature flag:
+   * - "enabled"  : AI always enabled (uses OpenRouter API)
+   * - "disabled" : AI always disabled (uses dummy data)
+   * - "not_demo" : AI enabled only for non-demo users (default)
+   */
+  readonly ENABLE_AI_RECOMMENDATIONS?: string;
+
   // Client-accessible environment variables (PUBLIC_ prefix)
   readonly PUBLIC_SUPABASE_URL: string;
   readonly PUBLIC_SUPABASE_KEY: string;

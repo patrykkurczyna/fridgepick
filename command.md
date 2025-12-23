@@ -1,66 +1,61 @@
-Your task is to implement a frontend view based on the provided implementation plan and implementation rules. Your goal is to create a detailed and accurate implementation that conforms to the provided plan, correctly represents the component structure, integrates with the API, and handles all specified user interactions.
+Twoim zadaniem jest zaimplementowanie serwisu w oparciu o podany plan implementacji i zasady implementacji. Twoim celem jest stworzenie szczegółowej i dokładnej implementacji, która jest zgodna z dostarczonym planem, poprawnie komunikuje się z API i obsługuje wszystkie określone funkcjonalności oraz przypadki błędów.
 
-First, review the implementation plan:
-
-
+Najpierw przejrzyj plan implementacji:
 <implementation_plan>
-@.ai/ai-recommendations-view-implementation-plan.md
+@.ai/openrouter-service-implementation-plan.md
+
 </implementation_plan>
 
-Now review the implementation rules:
-
-Review the defined types:
-
-<types>
-@src/types.ts
-</types>
-
-Implement the plan according to the following approach:
-
+Wdrażaj plan zgodnie z następującym podejściem:
 <implementation_approach>
-Implement a maximum of 3 steps from the implementation plan, briefly summarize what you've done, and describe the plan for the next 3 actions - stop work at this point and wait for my feedback.
+Realizuj maksymalnie 3 kroki planu implementacji, podsumuj krótko co zrobiłeś i opisz plan na 3 kolejne działania - zatrzymaj w tym momencie pracę i czekaj na mój feedback.
 </implementation_approach>
 
-Carefully analyze the implementation plan and rules. Pay special attention to component structure, API integration requirements, and user interactions described in the plan.
+Dokładnie przeanalizuj plan wdrożenia i zasady. Zwróć szczególną uwagę na strukturę serwisu, integrację API, obsługę błędów i kwestie bezpieczeństwa opisane w planie.
 
-Execute the following steps to implement the frontend view:
+Wykonaj następujące kroki, aby zaimplementować serwis:
 
-1. Component Structure:
-    - Identify all components listed in the implementation plan.
-    - Create a hierarchical structure of these components.
-    - Ensure that each component's responsibilities and relationships are clearly defined.
+Struktura serwisu:
+- Zdefiniuj klasę serwisu zgodnie z planem implementacji
+- Utwórz konstruktor inicjalizujący wymagane pola
+- Zastosuj odpowiednie modyfikatory dostępu dla pól i metod (public, private)
 
-2. API Integration:
-    - Identify all API endpoints listed in the plan.
-    - Implement necessary API calls for each endpoint.
-    - Handle API responses and update component state accordingly.
+Implementacja metod publicznych:
+- Zaimplementuj metody publiczne wymienione w planie
+- Upewnij się, że każda metoda jest poprawnie typowana zarówno dla parametrów jak i zwracanych wartości
+- Zapewnij kompletną implementację logiki biznesowej opisanej w planie
 
-3. User Interactions:
-    - List all user interactions specified in the implementation plan.
-    - Implement event handlers for each interaction.
-    - Ensure that each interaction triggers the appropriate action or state change.
+Implementacja metod prywatnych:
+- Opracuj metody pomocnicze wymienione w planie
+- Zapewnij prawidłową enkapsulację i separację odpowiedzialności
+- Zaimplementuj logikę formatowania danych, wysyłania żądań i przetwarzania odpowiedzi
 
-4. State Management:
-    - Identify required state for each component.
-    - Implement state management using the appropriate method (local state, custom hook, shared state).
-    - Ensure that state changes trigger necessary re-renders.
+Integracja z API:
+- Zaimplementuj logikę komunikacji z zewnętrznym API
+- Obsłuż wszystkie niezbędne parametry i nagłówki żądań
+- Zapewnij poprawne przetwarzanie odpowiedzi z API
 
-5. Styling and Layout:
-    - Apply specified styling and layout as mentioned in the implementation plan.
-    - Ensure responsiveness if required by the plan.
+Obsługa błędów:
+- Zaimplementuj kompleksową obsługę błędów dla wszystkich scenariuszy
+- Zastosuj odpowiednie mechanizmy ponownych prób dla błędów przejściowych
+- Zapewnij czytelne komunikaty błędów dla różnych scenariuszy
 
-6. Error Handling and Edge Cases:
-    - Implement error handling for API calls and user interactions.
-    - Consider and handle potential edge cases listed in the plan.
+Zabezpieczenia:
+- Zaimplementuj zalecane praktyki bezpieczeństwa wymienione w planie
+- Zapewnij bezpieczne zarządzanie kluczami API i danymi uwierzytelniającymi
+- Zastosuj walidację danych wejściowych dla zapobiegania atakom
 
-7. Performance Optimization:
-    - Implement any performance optimizations specified in the plan or rules.
-    - Ensure efficient rendering and minimal unnecessary re-renders.
+Dokumentacja i typowanie:
+- Zdefiniuj i zastosuj odpowiednie interfejsy dla parametrów i zwracanych wartości
+- Zapewnij pełne pokrycie typami dla całego serwisu
 
-8. Testing:
-    - If specified in the plan, implement unit tests for components and functions.
-    - Thoroughly test all user interactions and API integrations.
+Testowanie:
+- Przygotuj strukturę serwisu w sposób umożliwiający łatwe testowanie jednostkowe
+- Uwzględnij możliwość mockowania zależności zewnętrznych
 
-Throughout the implementation process, strictly adhere to the provided implementation rules. These rules take precedence over any general best practices that may conflict with them.
+W trakcie całego procesu implementacji należy ściśle przestrzegać dostarczonych zasad implementacji. Zasady te mają pierwszeństwo przed wszelkimi ogólnymi najlepszymi praktykami, które mogą być z nimi sprzeczne.
 
-Ensure that your implementation accurately reflects the provided implementation plan and adheres to all specified rules. Pay special attention to component structure, API integration, and handling of user interactions.
+Upewnij się, że twoja implementacja dokładnie odzwierciedla dostarczony plan implementacji i przestrzega wszystkich określonych zasad. Zwróć szczególną uwagę na strukturę serwisu, integrację z API, obsługę błędów i zabezpieczenia.
+
+Na koniec, serwis powinien byc wykorzystany w funkcjonalnosci @.ai/ai-recommendations-view-implementation-plan.md. Popatrz na @src/pages/recommendations.ts i TODO tam które mowi ze tam powinien byc zaimplementowany OpenRouter. Możesz rozwazyc dodanie feature flagi tam, tak zebym mogl kontrolowac kiedy uzywam OpenRouter do tego i np nie uzywal lokalnie albo mogl wylaczyc nma trybie demo. Daj mi rozne mozliwosci
+Logika biznesowa powinna opierać się na zapytaniu AI w odpowiedni sposób o wybranie dopasowa na podstawie kryteriów.
